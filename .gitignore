@@ -60,3 +60,29 @@ fastlane/report.xml
 fastlane/Preview.html
 fastlane/screenshots/**/*.png
 fastlane/test_output
+# macOS Finder
+.DS_Store
+
+# Xcode build products and indexes
+build/
+DerivedData/
+
+# Xcode workspace & user data
+*.xcworkspace
+!default.xcworkspace
+xcuserdata/
+*.xcuserstate
+
+# Xcode source‐control & checksum files
+*.xcscmblueprint
+*.xccheckout
+
+# Swift Package Manager
+.build/
+Package.resolved
+.swiftpm/
+
+# Swift Playgrounds
+timeline.xctimeline
+playground.xcworkspace
+
