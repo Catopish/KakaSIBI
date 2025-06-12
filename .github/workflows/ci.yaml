@@ -1,0 +1,32 @@
+name: Kakasibi macOS CI
+
+on:
+  push:
+    branches: [main, staging]
+  pull_request:
+    branches: [main, staging]
+
+jobs:
+  build-and-test:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest
+
+      - name: Build
+        run: |
+          xcodebuild clean build \
+            -scheme MachineLearningChallenge \
+            -destination 'platform=macOS'
+
+      # - name: Run Tests
+      #   run: |
+      #     xcodebuild test \
+      #       -scheme MachineLearningChallenge \
+      #       -destination 'platform=macOS'
