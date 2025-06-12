@@ -4,7 +4,7 @@ on:
   push:
     branches: [main, staging]
   pull_request:
-    branches: [main, staging]
+    branches: [main, staging, dev]
 
 jobs:
   build-and-test:
@@ -19,12 +19,15 @@ jobs:
         with:
           xcode-version: latest
 
-      - name: Build
+      - name: Build (skip code signing, target 15.2)
         run: |
           xcodebuild clean build \
             -scheme MachineLearningChallenge \
-            -destination 'platform=macOS'
-
+            -destination 'platform=macOS' \
+            MACOSX_DEPLOYMENT_TARGET=15.2 \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
       # - name: Run Tests
       #   run: |
       #     xcodebuild test \
