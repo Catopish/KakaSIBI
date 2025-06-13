@@ -17,25 +17,13 @@ struct Level: Identifiable {
 // MARK: - View
 
 struct MainView: View {
-    @State private var selectedLevel: Int = 0
-    @State private var showLevelSelector: Bool = false
+    @State private var selectedLevel: Int? = nil
     
     var body: some View {
         GeometryReader {
             geometry in
-            //                        HSplitView {
             // MARK: Left Panel
             ZStack {
-                // Vertical line
-                //                    VStack {
-                //                        Spacer(minLength: 40)
-                //                        Rectangle()
-                //                            .fill(Color.gray.opacity(0.3))
-                //                            .frame(width: 4)
-                //                            .padding(.vertical, 20)
-                //                        Spacer(minLength: 40)
-                //                    }
-                // Circles
                 VStack() {
                     Text("Pilih Tingkatan Belajar")
                         .font(.title2.weight(.bold))
@@ -46,9 +34,8 @@ struct MainView: View {
                         .onTapGesture {
                             withAnimation(.spring()) {
                                 if selectedLevel == level.id {
-                                    showLevelSelector = false
+                                    selectedLevel = nil
                                 }else{
-                                    showLevelSelector = true
                                     selectedLevel = level.id
                                 }
                             }
@@ -62,14 +49,9 @@ struct MainView: View {
                     alignment: .center
                 )
             }
-            //                .frame(minWidth: 200, maxWidth: 250)
-            //                .padding()
             
             //                 MARK: Right Panel
-            //                            Divider()
-            
-            if showLevelSelector {
-                //                OverlayView()
+            if let id = selectedLevel, let detail = levels.first(where: { $0.id == id }) {
                 HStack {
                     Spacer()
                     ZStack {
@@ -88,13 +70,11 @@ struct MainView: View {
                             Spacer()
                             
                             Button("Mulai Belajar") {
-                                // primary action
                                 print("Mulai Belajar tapped on level \(selectedLevel)")
                             }
                             .buttonStyle(PrimaryButtonStyle())
                             
                             Button("Ulangi Boss Battle") {
-                                // secondary action
                                 print("Ulangi Boss Battle tapped on level \(selectedLevel)")
                             }
                             .buttonStyle(SecondaryButtonStyle())
@@ -108,9 +88,6 @@ struct MainView: View {
                     }
                 }
             }
-            
-            //                        }
-            //            .frame(minWidth: 700, minHeight: 400)
         }
     }
 }
