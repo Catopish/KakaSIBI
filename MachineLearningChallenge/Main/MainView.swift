@@ -1,31 +1,9 @@
-////
-////  MainView.swift
-////  MachineLearningChallenge
-////
-////  Created by Al Amin Dwiesta on 12/06/25.
-////
 //
-//import SwiftUI
-//import Foundation
+//  MainView.swift
+//  MachineLearningChallenge
 //
-//struct MainView: View {
-//    var body: some View {
-//        GeometryReader{
-//            geometry in
-//            HStack{
-//                Color.blue
-////                    .frame(width: geometry.size.width*0.6)
-////                Color.red
-////                    .frame(width: geometry.size.width*0.4)
-//            }
-//        }
-//    }
-//}
+//  Created by Al Amin Dwiesta on 12/06/25.
 //
-//#Preview {
-//    MainView()
-//}
-
 import SwiftUI
 
 // MARK: - Model
@@ -39,11 +17,8 @@ struct Level: Identifiable {
 // MARK: - View
 
 struct MainView: View {
-    // The currently selected level
-    @State private var selectedLevel: Int = 1
-    
-    // Your four levels; replace the Lorem ipsum with real text as needed.
-    
+    @State private var selectedLevel: Int = 0
+    @State private var showLevelSelector: Bool = false
     
     var body: some View {
         GeometryReader {
@@ -70,7 +45,12 @@ struct MainView: View {
                                         isSelected: level.id == selectedLevel)
                         .onTapGesture {
                             withAnimation(.spring()) {
-                                selectedLevel = level.id
+                                if selectedLevel == level.id {
+                                    showLevelSelector = false
+                                }else{
+                                    showLevelSelector = true
+                                    selectedLevel = level.id
+                                }
                             }
                         }
                     }
@@ -86,45 +66,49 @@ struct MainView: View {
             //                .padding()
             
             //                 MARK: Right Panel
-            //                Divider()
+            //                            Divider()
             
-            HStack {
-                Spacer()
-                ZStack {
-                    VStack(alignment: .leading, spacing: 16) {
-                        let detail = levels.first { $0.id == selectedLevel }!
-                        
-                        Text(detail.title)
-                            .font(.title)
-                            .bold()
-                        
-                        ScrollView {
-                            Text(detail.content)
-                                .fixedSize(horizontal: false, vertical: true)
+            if showLevelSelector {
+                //                OverlayView()
+                HStack {
+                    Spacer()
+                    ZStack {
+                        VStack(alignment: .leading, spacing: 16) {
+                            let detail = levels.first { $0.id == selectedLevel }!
+                            
+                            Text(detail.title)
+                                .font(.title)
+                                .bold()
+                            
+                            ScrollView {
+                                Text(detail.content)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                            
+                            Spacer()
+                            
+                            Button("Mulai Belajar") {
+                                // primary action
+                                print("Mulai Belajar tapped on level \(selectedLevel)")
+                            }
+                            .buttonStyle(PrimaryButtonStyle())
+                            
+                            Button("Ulangi Boss Battle") {
+                                // secondary action
+                                print("Ulangi Boss Battle tapped on level \(selectedLevel)")
+                            }
+                            .buttonStyle(SecondaryButtonStyle())
                         }
-                        
-                        Spacer()
-                        
-                        Button("Mulai Belajar") {
-                            // primary action
-                            print("Mulai Belajar tapped on level \(selectedLevel)")
-                        }
-                        .buttonStyle(PrimaryButtonStyle())
-                        
-                        Button("Ulangi Boss Battle") {
-                            // secondary action
-                            print("Ulangi Boss Battle tapped on level \(selectedLevel)")
-                        }
-                        .buttonStyle(SecondaryButtonStyle())
+                        .padding()
+                        .frame(
+                            minWidth: 0,
+                            maxWidth: geometry.size.width * 0.4
+                        )
+                        .background(Color.black.opacity(0.9))
                     }
-                    .padding()
-                    .frame(
-                        minWidth: 0,
-                        maxWidth: geometry.size.width * 0.4
-                    )
-                    .background(Color.black.opacity(0.9))
                 }
             }
+            
             //                        }
             //            .frame(minWidth: 700, minHeight: 400)
         }

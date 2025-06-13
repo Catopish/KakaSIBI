@@ -27,6 +27,6 @@ struct CircleLevelView: View {
 }
 
 #Preview {
-    CircleLevelView(levelID: 2 ,isSelected: false)
+    CircleLevelView(levelID: 2 ,isSelected: true)
         .frame(minWidth: 100, minHeight: 100)
 }
