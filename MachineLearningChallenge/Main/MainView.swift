@@ -6,88 +6,80 @@
 //
 import SwiftUI
 
-// MARK: - Model
-
-struct Level: Identifiable {
-    let id: Int
-    let title: String
-    let content: String
-}
-
-// MARK: - View
-
 struct MainView: View {
     @State private var selectedLevel: Int? = nil
     
     var body: some View {
-        GeometryReader {
-            geometry in
-            // MARK: Left Panel
-            ZStack {
-                VStack() {
-                    Text("Pilih Tingkatan Belajar")
-                        .font(.title2.weight(.bold))
-                        .padding(.bottom, 20)
-                    ForEach(levels) { level in
-                        CircleLevelView(levelID: level.id,
-                                        isSelected: level.id == selectedLevel)
+        ScrollViewReader { proxy in
+            ScrollView(.vertical, showsIndicators: true) {
+                VStack(spacing: 150) {
+                    //            Text("Pilih Tingkatan Belajar")
+                    //               .font(.title2.weight(.bold))
+                    
+                    ForEach(levels.reversed()) { level in
+                        RectangleLevelView(
+                            levelID: level.id,
+                            isSelected: level.id == selectedLevel
+                        )
+                        .id(level.id)
+                        .contentShape(Rectangle())
                         .onTapGesture {
                             withAnimation(.spring()) {
-                                if selectedLevel == level.id {
-                                    selectedLevel = nil
-                                }else{
-                                    selectedLevel = level.id
-                                }
+                                selectedLevel = (selectedLevel == level.id ? nil : level.id)
                             }
                         }
+                        .popover(
+                            isPresented: Binding(
+                                get:  { selectedLevel == level.id },
+                                set: { if !$0 { selectedLevel = nil } }
+                            ),
+                            arrowEdge: .trailing
+                        ) {
+                            ModalView(level: level)
+                                .frame(
+                                    minWidth: 300,
+                                    idealWidth: 400,
+                                    maxWidth: 600,
+                                    minHeight: 200,
+                                    idealHeight: 700,
+                                    maxHeight: 1200
+                                )
+                                .padding()
+                        }
                     }
-                    .padding(.vertical,5)
                 }
-                .frame(
-                    width:  geometry.size.width,
-                    height: geometry.size.height,
-                    alignment: .center
-                )
+                .padding()
+            }
+            .onAppear {
+                // scroll to Level 1 at launch:
+                if let firstID = levels.first?.id {
+                    proxy.scrollTo(firstID, anchor: .bottom)
+                }
+            }
+        }
+    }
+}
+
+struct ModalView: View {
+    let level: Level
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text(level.title)
+                .font(.title).bold()
+            
+            ScrollView {
+                Text(level.content)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             
-            //                 MARK: Right Panel
-            if let id = selectedLevel, let detail = levels.first(where: { $0.id == id }) {
-                HStack {
-                    Spacer()
-                    ZStack {
-                        VStack(alignment: .leading, spacing: 16) {
-                            let detail = levels.first { $0.id == selectedLevel }!
-                            
-                            Text(detail.title)
-                                .font(.title)
-                                .bold()
-                            
-                            ScrollView {
-                                Text(detail.content)
-                                    .fixedSize(horizontal: false, vertical: true)
-                            }
-                            
-                            Spacer()
-                            
-                            Button("Mulai Belajar") {
-                                print("Mulai Belajar tapped on level \(selectedLevel)")
-                            }
-                            .buttonStyle(PrimaryButtonStyle())
-                            
-                            Button("Ulangi Boss Battle") {
-                                print("Ulangi Boss Battle tapped on level \(selectedLevel)")
-                            }
-                            .buttonStyle(SecondaryButtonStyle())
-                        }
-                        .padding()
-                        .frame(
-                            minWidth: 0,
-                            maxWidth: geometry.size.width * 0.4
-                        )
-                        .background(Color.black.opacity(0.9))
-                    }
-                }
-            }
+            Spacer()
+            
+            Button("Mulai Belajar") { /*…*/ }
+                .buttonStyle(PrimaryButtonStyle())
+            
+            Button("Ulangi Boss Battle") { /*…*/ }
+                .buttonStyle(SecondaryButtonStyle())
         }
     }
 }
