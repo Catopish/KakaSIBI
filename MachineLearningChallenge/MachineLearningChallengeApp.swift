@@ -11,7 +11,7 @@ import SwiftUI
 struct MachineLearningChallengeApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            TestingView()
         }
     }
 }
