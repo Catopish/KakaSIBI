@@ -10,6 +10,33 @@ import AVFoundation
 import Vision
 import CoreML
 
+/// Bridges an AVCaptureVideoPreviewLayer into SwiftUI on macOS
+struct CameraPreview: NSViewRepresentable {
+    let session: AVCaptureSession
+
+    func makeNSView(context: Context) -> NSView {
+        let view = NSView(frame: .zero)
+        view.wantsLayer = true
+        
+        // attach the video preview
+        let previewLayer = AVCaptureVideoPreviewLayer(session: session)
+        previewLayer.videoGravity = .resizeAspectFill
+        previewLayer.setAffineTransform(CGAffineTransform(scaleX: -1, y: 1))
+        previewLayer.frame = view.bounds
+        previewLayer.autoresizingMask = [.layerWidthSizable, .layerHeightSizable]
+        view.layer?.addSublayer(previewLayer)
+        
+        return view
+    }
+
+    func updateNSView(_ nsView: NSView, context: Context) {
+        guard let previewLayer = nsView.layer?.sublayers?.first as? AVCaptureVideoPreviewLayer else {
+            return
+        }
+        previewLayer.frame = nsView.bounds
+    }
+}
+
 final class CameraModel: NSObject, ObservableObject {
     // MARK: – public
     @Published var lastPrediction = "…"
