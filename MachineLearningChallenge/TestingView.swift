@@ -8,6 +8,16 @@ struct TestingView: View {
     // State untuk mengontrol apakah kartu terbuka atau tertutup
     @State private var isCardOpen: Bool = false
     @State private var selectedWord: String?     // ← track user’s choice
+    @State private var showOverlay: Bool = false   // show big check
+    
+    @AppStorage("completedPronounsRaw") private var completedPronounsRaw: String = ""
+    private var completedWords: Set<String> {
+        get { Set(completedPronounsRaw
+            .split(separator: ",")
+            .map { String($0) }
+            .filter { !$0.isEmpty }) }
+        set { completedPronounsRaw = newValue.sorted().joined(separator: ",") }
+    }
     
     // Tinggi penuh kartu saat terbuka
     let fullCardHeight: CGFloat = 250
@@ -38,7 +48,7 @@ struct TestingView: View {
                                         }
                                     }
                                     Spacer()
-                                    Text("Pronoun")
+                                    Text(camera.lastPrediction)
                                         .font(.system(size: 24, weight: .bold))
                                         .padding(.trailing, 112)
                                     Spacer()
@@ -89,7 +99,7 @@ struct TestingView: View {
                 CardView(
                     isCardOpen: $isCardOpen,
                     selectedWord: $selectedWord,
-                    camera: camera
+                    completedWords: completedWords
                 )
                 .clipShape(UnevenRoundedRectangle(topLeadingRadius: 25, topTrailingRadius: 25))
                 .frame(height: fullCardHeight)
@@ -97,9 +107,43 @@ struct TestingView: View {
                 .animation(.interactiveSpring(response: 0.5, dampingFraction: 0.8, blendDuration: 0.2), value: isCardOpen)
             }
             .ignoresSafeArea(.all, edges: .bottom)
+            
+            //MARK: Overlay cek bener apa engga
+            if showOverlay {
+                Color.black.opacity(0.4).ignoresSafeArea()
+                Image(systemName: "checkmark.circle.fill")
+                    .resizable()
+                    .frame(width: 150, height: 150)
+                    .foregroundColor(.green)
+                    .transition(.scale.combined(with: .opacity))
+            }
+            
         }
         .navigationBarBackButtonHidden(true)
         .onAppear { camera.start() }
+        .onChange(of: camera.lastPrediction) { newPrediction in
+            guard let picked = selectedWord,
+                  picked == newPrediction,
+                  !completedWords.contains(picked)
+            else { return }
+            
+            // mark done
+            var updated = completedWords
+            updated.insert(picked)
+            // write straight to the @AppStorage backing store:
+            completedPronounsRaw = updated
+                .sorted()
+                .joined(separator: ",")
+            // show overlay briefly
+            withAnimation {
+                showOverlay = true
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                withAnimation {
+                    showOverlay = false
+                }
+            }
+        }
     }
 }
 
@@ -107,7 +151,7 @@ struct TestingView: View {
 struct CardView: View {
     @Binding var isCardOpen: Bool
     @Binding var selectedWord: String?        // ← bound from parent
-    @ObservedObject var camera: CameraModel   // ← observe prediction
+    let completedWords: Set<String>
     
     let pronouns = ["Aku", "Kamu", "Mereka", "Dia", "Kita", "Kami"]
     
@@ -157,9 +201,14 @@ struct CardView: View {
                                     .foregroundColor(.white)
                                     .cornerRadius(8)
                                 Spacer()
-                                if selectedWord == word && word == camera.lastPrediction {
+                                if completedWords.contains(word) {
                                     Image(systemName: "checkmark.circle.fill")
-                                        .foregroundColor(.green)
+                                        .foregroundColor(.yellow)
+                                }
+                                
+                                if selectedWord == word {
+                                    Image(systemName: "hand.point.up.left.fill")
+                                        .foregroundColor(.white.opacity(0.7))
                                 }
                             }
                             .buttonStyle(PlainButtonStyle())
