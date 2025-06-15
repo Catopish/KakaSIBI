@@ -62,7 +62,7 @@ struct MainView: View {
                 }
             }
             .navigationDestination(isPresented: $navigateToTesting) {
-                TestingView()
+                TestingView(onBack: { navigateToTesting = false })
             }
         }
     }

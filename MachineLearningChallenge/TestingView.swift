@@ -4,6 +4,7 @@ import AVFoundation // for AVCaptureSession
 
 struct TestingView: View {
     @StateObject private var camera = CameraModel()
+    let onBack: () -> Void
     // State untuk mengontrol apakah kartu terbuka atau tertutup
     @State private var isCardOpen: Bool = false
     
@@ -24,11 +25,17 @@ struct TestingView: View {
                             GeometryReader {
                                 geometry in
                                 HStack {
-                                    Image(systemName: "chevron.left")
-                                        .frame(width: 32, height: 48)
-                                        .fontWeight(.bold)
-                                    Text("Pilih Level")
-                                        .font(.system(size: 20, weight: .semibold))
+                                    Button(action: {
+                                        onBack()
+                                    }) {
+                                        HStack {
+                                            Image(systemName: "chevron.left")
+                                                .frame(width: 32, height: 48)
+                                                .fontWeight(.bold)
+                                            Text("Pilih Level")
+                                                .font(.system(size: 20, weight: .semibold))
+                                        }
+                                    }
                                     Spacer()
                                     Text("Pronoun")
                                         .font(.system(size: 24, weight: .bold))
@@ -86,6 +93,7 @@ struct TestingView: View {
             }
             .ignoresSafeArea(.all, edges: .bottom)
         }
+        .navigationBarBackButtonHidden(true)
         .onAppear { camera.start() }
     }
 }
@@ -159,9 +167,9 @@ struct CardView: View {
 }
 
 // MARK: - Preview untuk Xcode Canvas
-struct TestingView_Previews: PreviewProvider {
-    static var previews: some View {
-        TestingView()
-            .frame(width: 1500, height: 600)
-    }
-}
+//struct TestingView_Previews: PreviewProvider {
+//    static var previews: some View {
+//        TestingView()
+//            .frame(width: 1500, height: 600)
+//    }
+//}
