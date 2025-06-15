@@ -1,0 +1,160 @@
+import SwiftUI
+
+struct TestingView: View {
+    // State untuk mengontrol apakah kartu terbuka atau tertutup
+    @State private var isCardOpen: Bool = false
+    
+    // Tinggi penuh kartu saat terbuka
+    let fullCardHeight: CGFloat = 250
+    
+    // Seberapa banyak kartu yang terlihat saat tertutup (di bagian bawah layar)
+    let peekHeight: CGFloat = 40
+
+    var body: some View {
+        ZStack {
+            // MARK: - Konten Utama Aplikasi
+            Color.gray.opacity(0.1)
+                .ignoresSafeArea()
+                .overlay(
+                    ZStack{
+                        VStack {
+                            GeometryReader {
+                                geometry in
+                                HStack {
+                                    Image(systemName: "chevron.left")
+                                        .frame(width: 32, height: 48)
+                                        .fontWeight(.bold)
+                                    Text("Pilih Level")
+                                        .font(.system(size: 20, weight: .semibold))
+                                    Spacer()
+                                    Text("Pronoun")
+                                        .font(.system(size: 24, weight: .bold))
+                                        .padding(.trailing, 112)
+                                    Spacer()
+                                }
+                                .frame(width: geometry.size.width, alignment: .leading)
+                                //                .padding(8)
+                                .background(Color.gray)
+                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                                .padding(.top)
+                                
+                                HStack (alignment: .bottom, spacing: 24){
+                                    ZStack{
+                                        Color.gray
+            //                            Text("Kaka")
+                                    }
+                                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                                    .frame(width: geometry.size.width * 0.35, height: geometry.size.height * 0.9)
+                                    ZStack{
+                                        VStack {
+                                            Color.gray
+                                        }
+                                        
+                                    }
+                                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                                    .frame(width: geometry.size.width * 0.635, height: geometry.size.height * 0.90)
+                                    
+                                }
+                                .frame(height: geometry.size.height)
+                //                .background(Color.cyan)
+                                .padding(.top, 35)
+                            }
+                        }
+                        .padding(8)
+                    }
+                )
+                .onTapGesture {
+                    if isCardOpen{
+                        isCardOpen.toggle()
+                    }
+                }
+            
+            // MARK: - Komponen Pembuka Kartu
+            VStack {
+                Spacer()
+                CardView(isCardOpen: $isCardOpen)
+                    .clipShape(UnevenRoundedRectangle(topLeadingRadius: 25, topTrailingRadius: 25))
+                    .frame(height: fullCardHeight)
+                    .offset(y: isCardOpen ? 0 : fullCardHeight - peekHeight)
+                    .animation(.interactiveSpring(response: 0.5, dampingFraction: 0.8, blendDuration: 0.2), value: isCardOpen)
+            }
+            .ignoresSafeArea(.all, edges: .bottom)
+        }
+    }
+}
+
+// MARK: - CardView (Tampilan Kartu Itu Sendiri)
+struct CardView: View {
+    @Binding var isCardOpen: Bool
+    let pronouns = ["Aku", "Kamu", "Mereka", "Dia", "Kita", "Kami"]
+    
+    var body: some View {
+        ZStack {
+            UnevenRoundedRectangle(topLeadingRadius: 25, topTrailingRadius: 25)
+                .fill(LinearGradient(gradient: Gradient(colors: [Color.blue.opacity(0.8), Color.blue]), startPoint: .top, endPoint: .bottom))
+                .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: -5)
+
+            VStack {
+                // MARK: Chevron untuk Animasi
+                HStack {
+                    Spacer()
+                    Text(isCardOpen ? "Tutup" : "Ingin Belajar Kata Ganti Lain? Pilih Disini!")
+                    Image(systemName: "chevron.up") // Menggunakan ikon chevron ke atas
+                        .font(.title2) // Ukuran ikon
+                        .foregroundColor(.white.opacity(0.8))
+//                        .padding(.bottom, isCardOpen ? 20 : 0)
+                        .rotationEffect(.degrees(isCardOpen ? 180 : 0))
+                        .animation(.interactiveSpring(response: 0.5, dampingFraction: 0.8, blendDuration: 0.2), value: isCardOpen)
+                    Spacer()
+                }
+                .frame(width: .infinity)
+                .padding(.vertical, 16)
+                .background(LinearGradient(gradient: Gradient(colors: [Color.blue.opacity(0.4), Color.blue]), startPoint: .top, endPoint: .bottom))
+                .onTapGesture {
+                    isCardOpen.toggle()
+                }
+                Spacer()
+                if isCardOpen {
+                    Text("Pilih Kata Ganti")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .padding(.bottom, 8)
+
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 3), spacing: 10) {
+                        ForEach(pronouns, id: \.self) { word in
+                            Button(action: {
+                                print("\(word) tapped")
+                                isCardOpen.toggle()
+                            }) {
+                                Text(word)
+                                    .frame(maxWidth: .infinity, minHeight: 40)
+                                    .background(Color.white.opacity(0.2))
+                                    .foregroundColor(.white)
+                                    .cornerRadius(8)
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                            
+                        }
+                    }
+                    .padding(.horizontal)
+                    .padding(.bottom, 50)
+                } else {
+                    Spacer()
+                    Text("Tekan Chevron untuk Membuka")
+                        .font(.subheadline)
+                        .foregroundColor(.white.opacity(0.9))
+                        .padding(.bottom, 20)
+                }
+            }
+        }
+        .frame(width: 1200)
+    }
+}
+
+// MARK: - Preview untuk Xcode Canvas
+struct TestingView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
+            .frame(width: 600, height: 800)
+    }
+}
