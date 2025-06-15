@@ -1,6 +1,10 @@
 import SwiftUI
+import AppKit       // for NSView
+import AVFoundation // for AVCaptureSession
 
 struct TestingView: View {
+    @StateObject private var camera = CameraModel()
+    let onBack: () -> Void
     // State untuk mengontrol apakah kartu terbuka atau tertutup
     @State private var isCardOpen: Bool = false
     
@@ -9,7 +13,7 @@ struct TestingView: View {
     
     // Seberapa banyak kartu yang terlihat saat tertutup (di bagian bawah layar)
     let peekHeight: CGFloat = 40
-
+    
     var body: some View {
         ZStack {
             // MARK: - Konten Utama Aplikasi
@@ -21,11 +25,17 @@ struct TestingView: View {
                             GeometryReader {
                                 geometry in
                                 HStack {
-                                    Image(systemName: "chevron.left")
-                                        .frame(width: 32, height: 48)
-                                        .fontWeight(.bold)
-                                    Text("Pilih Level")
-                                        .font(.system(size: 20, weight: .semibold))
+                                    Button(action: {
+                                        onBack()
+                                    }) {
+                                        HStack {
+                                            Image(systemName: "chevron.left")
+                                                .frame(width: 32, height: 48)
+                                                .fontWeight(.bold)
+                                            Text("Pilih Level")
+                                                .font(.system(size: 20, weight: .semibold))
+                                        }
+                                    }
                                     Spacer()
                                     Text("Pronoun")
                                         .font(.system(size: 24, weight: .bold))
@@ -40,14 +50,17 @@ struct TestingView: View {
                                 
                                 HStack (alignment: .bottom, spacing: 24){
                                     ZStack{
-                                        Color.gray
-            //                            Text("Kaka")
+                                        Color.purple
+                                        //                            Text("Kaka")
                                     }
                                     .clipShape(RoundedRectangle(cornerRadius: 8))
                                     .frame(width: geometry.size.width * 0.35, height: geometry.size.height * 0.9)
                                     ZStack{
                                         VStack {
-                                            Color.gray
+                                            CameraPreview(session: camera.session)
+                                            //                                                .frame(width: 640, height: 480)
+                                                .cornerRadius(8)
+                                                .shadow(radius: 4)
                                         }
                                         
                                     }
@@ -56,7 +69,7 @@ struct TestingView: View {
                                     
                                 }
                                 .frame(height: geometry.size.height)
-                //                .background(Color.cyan)
+                                //                .background(Color.cyan)
                                 .padding(.top, 35)
                             }
                         }
@@ -80,6 +93,8 @@ struct TestingView: View {
             }
             .ignoresSafeArea(.all, edges: .bottom)
         }
+        .navigationBarBackButtonHidden(true)
+        .onAppear { camera.start() }
     }
 }
 
@@ -93,7 +108,7 @@ struct CardView: View {
             UnevenRoundedRectangle(topLeadingRadius: 25, topTrailingRadius: 25)
                 .fill(LinearGradient(gradient: Gradient(colors: [Color.blue.opacity(0.8), Color.blue]), startPoint: .top, endPoint: .bottom))
                 .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: -5)
-
+            
             VStack {
                 // MARK: Chevron untuk Animasi
                 HStack {
@@ -102,7 +117,7 @@ struct CardView: View {
                     Image(systemName: "chevron.up") // Menggunakan ikon chevron ke atas
                         .font(.title2) // Ukuran ikon
                         .foregroundColor(.white.opacity(0.8))
-//                        .padding(.bottom, isCardOpen ? 20 : 0)
+                    //                        .padding(.bottom, isCardOpen ? 20 : 0)
                         .rotationEffect(.degrees(isCardOpen ? 180 : 0))
                         .animation(.interactiveSpring(response: 0.5, dampingFraction: 0.8, blendDuration: 0.2), value: isCardOpen)
                     Spacer()
@@ -119,7 +134,7 @@ struct CardView: View {
                         .font(.headline)
                         .foregroundColor(.white)
                         .padding(.bottom, 8)
-
+                    
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 3), spacing: 10) {
                         ForEach(pronouns, id: \.self) { word in
                             Button(action: {
@@ -152,9 +167,9 @@ struct CardView: View {
 }
 
 // MARK: - Preview untuk Xcode Canvas
-struct TestingView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
-            .frame(width: 600, height: 800)
-    }
-}
+//struct TestingView_Previews: PreviewProvider {
+//    static var previews: some View {
+//        TestingView()
+//            .frame(width: 1500, height: 600)
+//    }
+//}

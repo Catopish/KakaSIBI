@@ -9,9 +9,13 @@ import SwiftUI
 
 @main
 struct MachineLearningChallengeApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    
     var body: some Scene {
         WindowGroup {
-            TestingView()
+            MainView()
+//            ContentView()
+                .frame(minWidth: 800, minHeight: 600)
         }
     }
 }
