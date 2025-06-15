@@ -7,6 +7,7 @@ struct TestingView: View {
     let onBack: () -> Void
     // State untuk mengontrol apakah kartu terbuka atau tertutup
     @State private var isCardOpen: Bool = false
+    @State private var selectedWord: String?     // ← track user’s choice
     
     // Tinggi penuh kartu saat terbuka
     let fullCardHeight: CGFloat = 250
@@ -85,11 +86,15 @@ struct TestingView: View {
             // MARK: - Komponen Pembuka Kartu
             VStack {
                 Spacer()
-                CardView(isCardOpen: $isCardOpen)
-                    .clipShape(UnevenRoundedRectangle(topLeadingRadius: 25, topTrailingRadius: 25))
-                    .frame(height: fullCardHeight)
-                    .offset(y: isCardOpen ? 0 : fullCardHeight - peekHeight)
-                    .animation(.interactiveSpring(response: 0.5, dampingFraction: 0.8, blendDuration: 0.2), value: isCardOpen)
+                CardView(
+                    isCardOpen: $isCardOpen,
+                    selectedWord: $selectedWord,
+                    camera: camera
+                )
+                .clipShape(UnevenRoundedRectangle(topLeadingRadius: 25, topTrailingRadius: 25))
+                .frame(height: fullCardHeight)
+                .offset(y: isCardOpen ? 0 : fullCardHeight - peekHeight)
+                .animation(.interactiveSpring(response: 0.5, dampingFraction: 0.8, blendDuration: 0.2), value: isCardOpen)
             }
             .ignoresSafeArea(.all, edges: .bottom)
         }
@@ -101,6 +106,9 @@ struct TestingView: View {
 // MARK: - CardView (Tampilan Kartu Itu Sendiri)
 struct CardView: View {
     @Binding var isCardOpen: Bool
+    @Binding var selectedWord: String?        // ← bound from parent
+    @ObservedObject var camera: CameraModel   // ← observe prediction
+    
     let pronouns = ["Aku", "Kamu", "Mereka", "Dia", "Kita", "Kami"]
     
     var body: some View {
@@ -138,6 +146,8 @@ struct CardView: View {
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 3), spacing: 10) {
                         ForEach(pronouns, id: \.self) { word in
                             Button(action: {
+                                // 1️⃣ record selection
+                                selectedWord = word
                                 print("\(word) tapped")
                                 isCardOpen.toggle()
                             }) {
@@ -146,6 +156,11 @@ struct CardView: View {
                                     .background(Color.white.opacity(0.2))
                                     .foregroundColor(.white)
                                     .cornerRadius(8)
+                                Spacer()
+                                if selectedWord == word && word == camera.lastPrediction {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundColor(.green)
+                                }
                             }
                             .buttonStyle(PlainButtonStyle())
                             
