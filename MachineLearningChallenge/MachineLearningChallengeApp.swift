@@ -9,9 +9,25 @@ import SwiftUI
 
 @main
 struct MachineLearningChallengeApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    //MARK: GATAU CARA APUS APPSTORAGE/APPNYA COMMENT/Uncomment ini buat hapus appstorage for now
+    private let shouldWipeAppStorage = true
+
+    init() {
+        #if DEBUG
+        if shouldWipeAppStorage {
+            let bundleID = Bundle.main.bundleIdentifier!
+            UserDefaults.standard.removePersistentDomain(forName: bundleID)
+            UserDefaults.standard.synchronize()
+            print("🔨 AppStorage wiped for \(bundleID)")
+        }
+        #endif
+    }
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            MainView()
+//            ContentView()
+                .frame(minWidth: 800, minHeight: 600)
         }
     }
 }
