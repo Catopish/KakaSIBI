@@ -23,30 +23,4 @@ struct ContentView: View {
     }
 }
 
-/// Bridges an AVCaptureVideoPreviewLayer into SwiftUI on macOS
-struct CameraPreview: NSViewRepresentable {
-    let session: AVCaptureSession
 
-    func makeNSView(context: Context) -> NSView {
-        // a blank NSView that hosts the preview layer
-        let view = NSView(frame: .zero)
-        view.wantsLayer = true
-        
-        // attach the video preview
-        let previewLayer = AVCaptureVideoPreviewLayer(session: session)
-        previewLayer.videoGravity = .resizeAspectFill
-        previewLayer.frame = view.bounds
-        previewLayer.autoresizingMask = [.layerWidthSizable, .layerHeightSizable]
-        view.layer?.addSublayer(previewLayer)
-        
-        return view
-    }
-
-    func updateNSView(_ nsView: NSView, context: Context) {
-        // keep the preview layer filling the view on resize
-        guard let previewLayer = nsView.layer?.sublayers?.first as? AVCaptureVideoPreviewLayer else {
-            return
-        }
-        previewLayer.frame = nsView.bounds
-    }
-}

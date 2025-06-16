@@ -8,52 +8,65 @@ import SwiftUI
 
 struct MainView: View {
     @State private var selectedLevel: Int? = nil
+    @State private var navigateToTesting: Bool = false
     
     var body: some View {
-        ScrollViewReader { proxy in
-            ScrollView(.vertical, showsIndicators: true) {
-                VStack(spacing: 150) {
-                    //            Text("Pilih Tingkatan Belajar")
-                    //               .font(.title2.weight(.bold))
-                    
-                    ForEach(levels.reversed()) { level in
-                        RectangleLevelView(
-                            levelID: level.id,
-                            isSelected: level.id == selectedLevel
-                        )
-                        .id(level.id)
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            withAnimation(.spring()) {
-                                selectedLevel = (selectedLevel == level.id ? nil : level.id)
-                            }
-                        }
-                        .popover(
-                            isPresented: Binding(
-                                get:  { selectedLevel == level.id },
-                                set: { if !$0 { selectedLevel = nil } }
-                            ),
-                            arrowEdge: .trailing
-                        ) {
-                            ModalView(level: level)
-                                .frame(
-                                    minWidth: 300,
-                                    idealWidth: 400,
-                                    maxWidth: 600,
-                                    minHeight: 200,
-                                    idealHeight: 700,
-                                    maxHeight: 1200
+        NavigationStack {
+            GeometryReader { geo in
+                ScrollViewReader { proxy in
+                    ScrollView(.vertical, showsIndicators: true) {
+                        VStack(spacing: 150) {
+                            //            Text("Pilih Tingkatan Belajar")
+                            //               .font(.title2.weight(.bold))
+                            
+                            ForEach(levels.reversed()) { level in
+                                RectangleLevelView(
+                                    levelID: level.id,
+                                    isSelected: level.id == selectedLevel
                                 )
-                                .padding()
+                                .id(level.id)
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    withAnimation(.spring()) {
+                                        selectedLevel = (selectedLevel == level.id ? nil : level.id)
+                                    }
+                                }
+                                .popover(
+                                    isPresented: Binding(
+                                        get:  { selectedLevel == level.id },
+                                        set: { if !$0 { selectedLevel = nil } }
+                                    ),
+                                    arrowEdge: .trailing
+                                ) {
+                                    ModalView(level: level){
+                                        navigateToTesting = true
+                                    }
+                                    .frame(
+                                        minWidth: 300,
+                                        idealWidth: 400,
+                                        maxWidth: 600,
+                                        minHeight: 200,
+                                        idealHeight: 700,
+                                        maxHeight: 1200
+                                    )
+                                    .padding()
+                                }
+                            }
+                            Color.clear
+                                .padding(.top,-200)
+//                                .frame(height: geo.size.height * 0.2)
+                        }
+                        .padding()
+                    }
+                    .onAppear {
+                        // scroll to Level 1 at launch:
+                        if let firstID = levels.first?.id {
+                            proxy.scrollTo(firstID, anchor: .bottom)
                         }
                     }
                 }
-                .padding()
-            }
-            .onAppear {
-                // scroll to Level 1 at launch:
-                if let firstID = levels.first?.id {
-                    proxy.scrollTo(firstID, anchor: .bottom)
+                .navigationDestination(isPresented: $navigateToTesting) {
+                    TestingView(onBack: { navigateToTesting = false })
                 }
             }
         }
@@ -62,6 +75,7 @@ struct MainView: View {
 
 struct ModalView: View {
     let level: Level
+    let onStartLearning: () -> Void
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -75,8 +89,10 @@ struct ModalView: View {
             
             Spacer()
             
-            Button("Mulai Belajar") { /*…*/ }
-                .buttonStyle(PrimaryButtonStyle())
+            Button("Mulai Belajar") {
+                onStartLearning()
+            }
+            .buttonStyle(PrimaryButtonStyle())
             
             Button("Ulangi Boss Battle") { /*…*/ }
                 .buttonStyle(SecondaryButtonStyle())
