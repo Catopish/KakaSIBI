@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import TipKit
 
 @main
 struct MachineLearningChallengeApp: App {
@@ -21,6 +22,7 @@ struct MachineLearningChallengeApp: App {
             UserDefaults.standard.synchronize()
             print("🔨 AppStorage wiped for \(bundleID)")
         }
+        try? Tips.resetDatastore()
         #endif
     }
     var body: some Scene {
