@@ -12,34 +12,35 @@ struct MainView: View {
     
     var body: some View {
         NavigationStack {
-            ScrollViewReader { proxy in
-                ScrollView(.vertical, showsIndicators: true) {
-                    VStack(spacing: 150) {
-                        //            Text("Pilih Tingkatan Belajar")
-                        //               .font(.title2.weight(.bold))
-                        
-                        ForEach(levels.reversed()) { level in
-                            RectangleLevelView(
-                                levelID: level.id,
-                                isSelected: level.id == selectedLevel
-                            )
-                            .id(level.id)
-                            .contentShape(Rectangle())
-                            .onTapGesture {
-                                withAnimation(.spring()) {
-                                    selectedLevel = (selectedLevel == level.id ? nil : level.id)
+            GeometryReader { geo in
+                ScrollViewReader { proxy in
+                    ScrollView(.vertical, showsIndicators: true) {
+                        VStack(spacing: 150) {
+                            //            Text("Pilih Tingkatan Belajar")
+                            //               .font(.title2.weight(.bold))
+                            
+                            ForEach(levels.reversed()) { level in
+                                RectangleLevelView(
+                                    levelID: level.id,
+                                    isSelected: level.id == selectedLevel
+                                )
+                                .id(level.id)
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    withAnimation(.spring()) {
+                                        selectedLevel = (selectedLevel == level.id ? nil : level.id)
+                                    }
                                 }
-                            }
-                            .popover(
-                                isPresented: Binding(
-                                    get:  { selectedLevel == level.id },
-                                    set: { if !$0 { selectedLevel = nil } }
-                                ),
-                                arrowEdge: .trailing
-                            ) {
-                                ModalView(level: level){
-                                    navigateToTesting = true
-                                }
+                                .popover(
+                                    isPresented: Binding(
+                                        get:  { selectedLevel == level.id },
+                                        set: { if !$0 { selectedLevel = nil } }
+                                    ),
+                                    arrowEdge: .trailing
+                                ) {
+                                    ModalView(level: level){
+                                        navigateToTesting = true
+                                    }
                                     .frame(
                                         minWidth: 300,
                                         idealWidth: 400,
@@ -49,20 +50,24 @@ struct MainView: View {
                                         maxHeight: 1200
                                     )
                                     .padding()
+                                }
                             }
+                            Color.clear
+                                .padding(.top,-200)
+//                                .frame(height: geo.size.height * 0.2)
+                        }
+                        .padding()
+                    }
+                    .onAppear {
+                        // scroll to Level 1 at launch:
+                        if let firstID = levels.first?.id {
+                            proxy.scrollTo(firstID, anchor: .bottom)
                         }
                     }
-                    .padding()
                 }
-                .onAppear {
-                    // scroll to Level 1 at launch:
-                    if let firstID = levels.first?.id {
-                        proxy.scrollTo(firstID, anchor: .bottom)
-                    }
+                .navigationDestination(isPresented: $navigateToTesting) {
+                    TestingView(onBack: { navigateToTesting = false })
                 }
-            }
-            .navigationDestination(isPresented: $navigateToTesting) {
-                TestingView(onBack: { navigateToTesting = false })
             }
         }
     }
