@@ -1,14 +1,19 @@
 import SwiftUI
 import AppKit       // for NSView
 import AVFoundation // for AVCaptureSession
+import AVKit
 
 struct TestingView: View {
+    
+    @State private var player = AVPlayer()
     @StateObject private var camera = CameraModel()
     let onBack: () -> Void
     // State untuk mengontrol apakah kartu terbuka atau tertutup
     @State private var isCardOpen: Bool = false
     @State private var selectedWord: String?     // ← track user’s choice
     @State private var showOverlay: Bool = false   // show big check
+    @State private var showCompletionModal = false
+
     
     @AppStorage("completedPronounsRaw") private var completedPronounsRaw: String = ""
     private var completedWords: Set<String> {
@@ -55,32 +60,34 @@ struct TestingView: View {
                                     Spacer()
                                 }
                                 .frame(width: geometry.size.width, alignment: .leading)
-                                //                .padding(8)
                                 .background(Color.gray)
                                 .clipShape(RoundedRectangle(cornerRadius: 8))
                                 .padding(.top)
                                 
                                 HStack (alignment: .center, spacing: 24){
                                     ZStack{
-                                        Color.purple
-                                        //                            Text("Kaka")
+//                                        CustomVideoPlayerView(url: Bundle.main.url(forResource: "Mereka_Lindan_Fast_Backlight_1", withExtension: "mov")!)
+//                                            .clipShape(RoundedRectangle(cornerRadius: 8))
+//                                            .frame(width: geometry.size.width * 0.35, height: geometry.size.height * 0.9)
+                                        VideoContainerView(videoURL: Bundle.main.url(forResource: "Mereka_Lindan_Fast_Backlight_1", withExtension: "mov")!)
+                                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                                            .frame(width: geometry.size.width * 0.35, height: geometry.size.height * 0.9)
+                                            .background(Color.red.opacity(0.2))
+                            
+
                                     }
                                     .clipShape(RoundedRectangle(cornerRadius: 8))
                                     .frame(width: geometry.size.width * 0.35, height: geometry.size.height * 0.9)
                                     ZStack{
-//                                        VStack {
-                                            CameraPreview(session: camera.session)
-                                            //  .frame(width: 640, height: 480)
-                                                .cornerRadius(8)
-                                                .shadow(radius: 4)
-//                                        }
+                                        CameraPreview(session: camera.session)
+                                            .cornerRadius(8)
+                                            .shadow(radius: 4)
                                     }
                                     .clipShape(RoundedRectangle(cornerRadius: 8))
                                     .frame(width: geometry.size.width * 0.635, height: geometry.size.height * 0.75)
                                     
                                 }
                                 .frame(height: geometry.size.height)
-                                //                .background(Color.cyan)
                                 .padding(.top, 35)
                             }
                         }
@@ -123,18 +130,17 @@ struct TestingView: View {
         .onAppear { camera.start() }
         .onChange(of: camera.lastPrediction) { newPrediction in
             guard let picked = selectedWord,
-                  picked == newPrediction,
-                  !completedWords.contains(picked)
+                  picked == newPrediction
             else { return }
-            
-            // mark done
+
+            // ✅ Update completedWords jika belum ada
             var updated = completedWords
-            updated.insert(picked)
-            // write straight to the @AppStorage backing store:
-            completedPronounsRaw = updated
-                .sorted()
-                .joined(separator: ",")
-            // show overlay briefly
+            if !updated.contains(picked) {
+                updated.insert(picked)
+                completedPronounsRaw = updated.sorted().joined(separator: ",")
+            }
+
+            // ✅ Tampilkan overlay (checkmark hijau)
             withAnimation {
                 showOverlay = true
             }
@@ -143,7 +149,51 @@ struct TestingView: View {
                     showOverlay = false
                 }
             }
+
+            // ✅ Cek apakah semua pronouns sudah selesai
+            let allPronouns = ["Kamu", "Dia", "Kita"]
+            if allPronouns.allSatisfy({ updated.contains($0) }) {
+                showCompletionModal = true
+            }
         }
+
+        .sheet(isPresented: $showCompletionModal) {
+            VStack(spacing: 20) {
+                Text("🎉 Kamu sudah membuka Training Ground!")
+                    .font(.title)
+                    .multilineTextAlignment(.center)
+                    .padding()
+
+                Text("Ingin mencoba skill-mu?")
+                    .font(.headline)
+
+                HStack(spacing: 20) {
+                    Button("Let's Go") {
+                        // Navigasi ke halaman berikutnya
+                        print("User chose to go!")
+                        showCompletionModal = false
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+
+                    Button("Do it Later") {
+                        showCompletionModal = false
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(Color.gray.opacity(0.3))
+                    .foregroundColor(.primary)
+                    .cornerRadius(10)
+                }
+                .padding(.horizontal)
+            }
+            .padding()
+            .frame(width: 400, height: 300)
+        }
+
     }
 }
 
@@ -153,7 +203,7 @@ struct CardView: View {
     @Binding var selectedWord: String?        // ← bound from parent
     let completedWords: Set<String>
     
-    let pronouns = ["Aku", "Kamu", "Mereka", "Dia", "Kita", "Kami"]
+    let pronouns = ["Kamu", "Dia", "Kita"]
     
     var body: some View {
         ZStack {
@@ -227,6 +277,7 @@ struct CardView: View {
             }
         }
         .frame(width: 1200)
+        
     }
 }
 
