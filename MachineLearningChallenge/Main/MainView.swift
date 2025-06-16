@@ -17,55 +17,52 @@ struct MainView: View {
                     ScrollView(.vertical, showsIndicators: true) {
                         ZStack {
                             Image("LEVELSELECT_BG")
-                                .resizable()                       // allow resizing
-                                .scaledToFill()                    // fill and crop edges
+                                .resizable()
+                                .scaledToFill()
                                 .frame(width: geo.size.width,
-                                       height: geo.size.height)  // exactly full screen
-//                                .clipped()                         // chop off overflow
-//                                .ignoresSafeArea()                // under status bar, etc.
-                            VStack(spacing: 150) {
-                                //            Text("Pilih Tingkatan Belajar")
-                                //               .font(.title2.weight(.bold))
-                                
-                                ForEach(levels.reversed()) { level in
-                                    RectangleLevelView(
-                                        levelID: level.id,
-                                        isSelected: level.id == selectedLevel
-                                    )
-                                    .id(level.id)
-                                    .contentShape(Rectangle())
-                                    .onTapGesture {
-                                        withAnimation(.spring()) {
-                                            selectedLevel = (selectedLevel == level.id ? nil : level.id)
-                                        }
-                                    }
-                                    .popover(
-                                        isPresented: Binding(
-                                            get:  { selectedLevel == level.id },
-                                            set: { if !$0 { selectedLevel = nil } }
-                                        ),
-                                        arrowEdge: .trailing
-                                    ) {
-                                        ModalView(level: level){
-                                            navigateToTesting = true
-                                        }
-                                        .frame(
-                                            minWidth: 300,
-                                            idealWidth: 400,
-                                            maxWidth: 600,
-                                            minHeight: 200,
-                                            idealHeight: 700,
-                                            maxHeight: 1200
+                                       height: geo.size.height)
+                            VStack() {
+                                Spacer().frame(height: 72)
+                                VStack(spacing: 150) {
+                                    ForEach(levels.reversed()) { level in
+                                        RectangleLevelView(
+                                            levelID: level.id,
+                                            isSelected: level.id == selectedLevel
                                         )
-                                        .padding()
+                                        .id(level.id)
+                                        .contentShape(Rectangle())
+                                        .onTapGesture {
+                                            withAnimation(.spring()) {
+                                                selectedLevel = (selectedLevel == level.id ? nil : level.id)
+                                            }
+                                        }
+                                        .popover(
+                                            isPresented: Binding(
+                                                get:  { selectedLevel == level.id },
+                                                set: { if !$0 { selectedLevel = nil } }
+                                            ),
+                                            arrowEdge: .trailing
+                                        ) {
+                                            ModalView(level: level){
+                                                navigateToTesting = true
+                                            }
+                                            .frame(
+                                                minWidth: 300,
+                                                idealWidth: 400,
+                                                maxWidth: 600,
+                                                minHeight: 200,
+                                                idealHeight: 700,
+                                                maxHeight: 1200
+                                            )
+                                            .padding()
+                                        }
                                     }
                                 }
-                                Color.clear
-                                    .padding(.top,-200)
-                                //                                .frame(height: geo.size.height * 0.2)
                             }
                             .padding()
                         }
+                        .padding(.vertical, 110)
+                        .frame(minHeight: geo.size.height + 220)
                     }
                     .onAppear {
                         // scroll to Level 1 at launch:
