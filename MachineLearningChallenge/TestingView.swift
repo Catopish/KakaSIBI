@@ -46,6 +46,7 @@ struct TestingView: View {
                                             Text("Pilih Level")
                                                 .font(.system(size: 20, weight: .semibold))
                                         }
+                                        .padding(.trailing)
                                     }
                                     Spacer()
                                     Text(camera.lastPrediction)
@@ -59,7 +60,7 @@ struct TestingView: View {
                                 .clipShape(RoundedRectangle(cornerRadius: 8))
                                 .padding(.top)
                                 
-                                HStack (alignment: .bottom, spacing: 24){
+                                HStack (alignment: .center, spacing: 24){
                                     ZStack{
                                         Color.purple
                                         //                            Text("Kaka")
@@ -67,16 +68,15 @@ struct TestingView: View {
                                     .clipShape(RoundedRectangle(cornerRadius: 8))
                                     .frame(width: geometry.size.width * 0.35, height: geometry.size.height * 0.9)
                                     ZStack{
-                                        VStack {
+//                                        VStack {
                                             CameraPreview(session: camera.session)
-                                            //                                                .frame(width: 640, height: 480)
+                                            //  .frame(width: 640, height: 480)
                                                 .cornerRadius(8)
                                                 .shadow(radius: 4)
-                                        }
-                                        
+//                                        }
                                     }
                                     .clipShape(RoundedRectangle(cornerRadius: 8))
-                                    .frame(width: geometry.size.width * 0.635, height: geometry.size.height * 0.90)
+                                    .frame(width: geometry.size.width * 0.635, height: geometry.size.height * 0.75)
                                     
                                 }
                                 .frame(height: geometry.size.height)
