@@ -5,38 +5,38 @@ import TipKit
 import AVKit
 
 struct videoTips: Tip {
-    var title: Text  {
-        Text("Watch Tutorial First")
+    var title: Text {
+        Text("Tonton tutorialnya dulu, ya!")
     }
     var message: Text? {
-        Text("by watching this video first, you can grasp how to do the sign language")
+        Text("Dengan nonton video ini dulu, kamu bakal lebih paham cara bikin gerakan bahasa isyarat.")
     }
     var image: Image? {
-        Image(systemName: "star")
+        Image(systemName: "1.circle")
     }
 }
 
 struct selectWordsTips: Tip {
-    var title: Text  {
-        Text("Click Here to change Words")
+    var title: Text {
+        Text("Ketuk di sini buat ganti kata")
     }
     var message: Text? {
-        Text("Click Here to change Words")
+        Text("Klik aja kalau mau ubah kata-katanya.")
     }
     var image: Image? {
-        Image(systemName: "star")
+        Image(systemName: "3.circle")
     }
 }
 
 struct videoPreviewTips: Tip {
-    var title: Text  {
-        Text("Peragakan ulang")
+    var title: Text {
+        Text("Ayo peragakan lagi!")
     }
     var message: Text? {
-        Text("peragakan ulang")
+        Text("Coba ulangin gerakannya biar makin lancar.")
     }
     var image: Image? {
-        Image(systemName: "star")
+        Image(systemName: "2.circle")
     }
 }
 
@@ -50,12 +50,14 @@ struct TestingView: View {
     @State private var selectedWord: String?     // ← track user's choice
     @State private var showOverlay: Bool = false   // show big check
     @State private var showCompletionModal = false
-    
     let pronouns = ["Aku", "Kamu", "Dia", "Mereka", "Kita", "Kami"]
+    @State private var showHelpModal = false
     
     var videotips = videoTips()
     var videopreviewtips = videoPreviewTips()
     var selectwordstips = selectWordsTips()
+    
+    let pronouns = ["Kamu", "Dia", "Kita"]
     
     @AppStorage("completedPronounsRaw") private var completedPronounsRaw: String = ""
     private var completedWords: Set<String> {
@@ -68,7 +70,6 @@ struct TestingView: View {
     
     // Tinggi penuh kartu saat terbuka
     let fullCardHeight: CGFloat = 250
-    
     // Seberapa banyak kartu yang terlihat saat tertutup (di bagian bawah layar)
     let peekHeight: CGFloat = 40
     
@@ -119,10 +120,18 @@ struct TestingView: View {
                                         .padding(.trailing)
                                     }
                                     Spacer()
-                                    Text(camera.lastPrediction)
+                                    Text("Kata Ganti")
                                         .font(.system(size: 24, weight: .bold))
                                         .padding(.trailing, 112)
                                     Spacer()
+                                    Button{
+                                        showHelpModal = true
+                                    }label:{
+                                        Image(systemName: "questionmark.circle.fill")
+                                            .font(.system(size: 24))
+                                            .padding(.trailing,20)
+                                    }
+                                    .buttonStyle(PlainButtonStyle())
                                 }
                                 .frame(width: geometry.size.width, alignment: .leading)
                                 .background(Color.gray)
@@ -253,6 +262,10 @@ struct TestingView: View {
                     .foregroundColor(.green)
                     .transition(.scale.combined(with: .opacity))
             }
+            if showHelpModal {
+                Color.black.opacity(0.4).ignoresSafeArea()
+                HelpModalView(showHelpModal: $showHelpModal)
+            }
         }
         .navigationBarBackButtonHidden(true)
         .onAppear {
@@ -274,14 +287,14 @@ struct TestingView: View {
             guard let picked = selectedWord,
                   picked == newPrediction
             else { return }
-
+            
             // ✅ Update completedWords jika belum ada
             var updated = completedWords
             if !updated.contains(picked) {
                 updated.insert(picked)
                 completedPronounsRaw = updated.sorted().joined(separator: ",")
             }
-
+            
             // ✅ Tampilkan overlay (checkmark hijau)
             withAnimation {
                 showOverlay = true
@@ -291,24 +304,24 @@ struct TestingView: View {
                     showOverlay = false
                 }
             }
-
+            
             // ✅ Cek apakah semua pronouns sudah selesai
             let allPronouns = pronouns
             if allPronouns.allSatisfy({ updated.contains($0) }) {
                 showCompletionModal = true
             }
         }
-
+        
         .sheet(isPresented: $showCompletionModal) {
             VStack(spacing: 20) {
                 Text("🎉 Kamu sudah membuka Training Ground!")
                     .font(.title)
                     .multilineTextAlignment(.center)
                     .padding()
-
+                
                 Text("Ingin mencoba skill-mu?")
                     .font(.headline)
-
+                
                 HStack(spacing: 20) {
                     Button("Let's Go") {
                         // Navigasi ke halaman berikutnya
@@ -320,7 +333,7 @@ struct TestingView: View {
                     .background(Color.blue)
                     .foregroundColor(.white)
                     .cornerRadius(10)
-
+                    
                     Button("Do it Later") {
                         showCompletionModal = false
                     }
@@ -346,7 +359,6 @@ struct CardView: View {
     let pronouns: [String]
     @Binding var currentIndex: Int
     let onWordSelected: (String) -> Void
-
     var body: some View {
         ZStack {
             UnevenRoundedRectangle(topLeadingRadius: 25, topTrailingRadius: 25)
@@ -390,24 +402,13 @@ struct CardView: View {
                                 print("\(word) tapped")
                                 isCardOpen.toggle()
                             }) {
-                                HStack {
+                                HStack{
                                     Text(word)
                                         .frame(maxWidth: .infinity, minHeight: 40)
-                                        .background(Color.white.opacity(0.2))
+                                        .background(completedWords.contains(word) ? Color.green.opacity(0.5) : Color.white.opacity(0.2) )
                                         .foregroundColor(.white)
                                         .cornerRadius(8)
-                                    
-                                    VStack {
-                                        if completedWords.contains(word) {
-                                            Image(systemName: "checkmark.circle.fill")
-                                                .foregroundColor(.yellow)
-                                        }
-                                        
-                                        if selectedWord == word {
-                                            Image(systemName: "hand.point.up.left.fill")
-                                                .foregroundColor(.white.opacity(0.7))
-                                        }
-                                    }
+                                    Spacer()
                                 }
                             }
                             .buttonStyle(PlainButtonStyle())
@@ -427,3 +428,52 @@ struct CardView: View {
         .frame(width: 1200)
     }
 }
+
+struct HelpModalView: View {
+    @Binding var showHelpModal: Bool
+    
+    var body: some View {
+        ZStack {
+            //            Color.black.opacity(0.4)
+            //                .ignoresSafeArea()
+            VStack(spacing: 20) {
+                Text("Cara menggunakan aplikasi KakaSIBI")
+                    .font(.headline)
+                
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("1. Tonton video instruksi terlebih dahulu.")
+                    Text("2. Peragakan ulang bahasa isyarat di depan kamera Anda.")
+                    Text("3. Jika gerakan sesuai, tanda centang akan muncul.")
+                }
+                .font(.body)
+                
+                // Close button
+                Button {
+                    showHelpModal = false
+                } label: {
+                    Text("Tutup")
+                        .font(.headline)
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 12)
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(8)
+                }
+                .buttonStyle(.plain)
+            }
+            .padding()
+            .background(Color.black)
+            .cornerRadius(12)
+            .shadow(radius: 10)
+            .padding(.horizontal, 40)
+        }
+    }
+}
+
+// MARK: - Preview untuk Xcode Canvas
+//struct TestingView_Previews: PreviewProvider {
+//    static var previews: some View {
+//        TestingView()
+//            .frame(width: 1500, height: 600)
+//    }
+//}
