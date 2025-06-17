@@ -57,7 +57,6 @@ struct TestingView: View {
     var videopreviewtips = videoPreviewTips()
     var selectwordstips = selectWordsTips()
     
-    let pronouns = ["Kamu", "Dia", "Kita"]
     
     @AppStorage("completedPronounsRaw") private var completedPronounsRaw: String = ""
     private var completedWords: Set<String> {
