@@ -1,0 +1,2710 @@
+diff --git a/Components/CustomVideoPlayerView.swift b/Components/CustomVideoPlayerView.swift
+index 875fc64..5144837 100644
+--- a/Components/CustomVideoPlayerView.swift
++++ b/Components/CustomVideoPlayerView.swift
+@@ -1,86 +1,3 @@
+-//
+-//  CustomVideoPlayerView.swift
+-//  MachineLearningChallenge
+-//
+-//  Created by Lin Dan Christiano on 16/06/25.
+-//
+-
+-//
+-//import SwiftUI
+-//import AVKit
+-//
+-//public struct CustomVideoPlayerView: View {
+-//    public let url: URL
+-//    
+-//    @State private var player: AVPlayer = AVPlayer()
+-//    @State private var playCount: Int = 0
+-//    @State private var showReplayButton = false
+-//    
+-//    public init(url: URL) {
+-//           self.url = url
+-//       }
+-//
+-//    // Observing player end
+-//    private var playerObserver: Any?
+-//    
+-//    public var body: some View {
+-//        ZStack {
+-//            VideoPlayer(player: player)
+-//                .disabled(true) // matikan control default
+-//                .onAppear {
+-//                    setupPlayer()
+-//                    player.play()
+-//                }
+-//                .onDisappear {
+-//                    player.pause()
+-//                    removeObserver()
+-//                }
+-//            
+-//            if showReplayButton {
+-//                Button(action: {
+-//                    playCount = 0
+-//                    showReplayButton = false
+-//                    player.seek(to: .zero)
+-//                    player.play()
+-//                }) {
+-//                    Image(systemName: "gobackward")
+-//                        .resizable()
+-//                        .frame(width: 60, height: 60)
+-//                        .foregroundColor(.white)
+-//                        .background(Circle().fill(Color.black.opacity(0.6)))
+-//                }
+-//            }
+-//        }
+-//    }
+-//    
+-//    // MARK: - Player Setup & Observer
+-//    private func setupPlayer() {
+-//        player.replaceCurrentItem(with: AVPlayerItem(url: url))
+-//        player.actionAtItemEnd = .none
+-//        
+-//        removeObserver() // Remove old observer if any
+-//        
+-//        NotificationCenter.default.addObserver(
+-//            forName: .AVPlayerItemDidPlayToEndTime,
+-//            object: player.currentItem,
+-//            queue: .main
+-//        ) { _ in
+-//            playCount += 1
+-//            if playCount >= 2 {
+-//                player.pause()
+-//                showReplayButton = true
+-//            } else {
+-//                player.seek(to: .zero)
+-//                player.play()
+-//            }
+-//        }
+-//    }
+-//    
+-//    private func removeObserver() {
+-//        NotificationCenter.default.removeObserver(self, name: .AVPlayerItemDidPlayToEndTime, object: player.currentItem)
+-//    }
+-//}
+-
+ import SwiftUI
+ import AVFoundation
+ import AVKit
+@@ -106,7 +23,6 @@ struct CustomVideoPlayerView: NSViewRepresentable {
+         return view
+     }
+ 
+-
+     func updateNSView(_ nsView: NSView, context: Context) {
+         context.coordinator.playerLayer?.frame = nsView.bounds
+     }
+@@ -125,26 +41,24 @@ struct VideoContainerView: View {
+     @State private var player: AVPlayer
+     @State private var playCount: Int = 0
+     @State private var showReplayButton: Bool = false
++    @State private var currentURL: URL
+ 
+     init(videoURL: URL) {
+         self.videoURL = videoURL
+         self._player = State(initialValue: AVPlayer(url: videoURL))
++        self._currentURL = State(initialValue: videoURL)
+     }
+ 
+     var body: some View {
+         ZStack {
+             CustomVideoPlayerView(player: player)
+                 .onAppear {
+-                    player.seek(to: .zero)
+-                    player.play()
+-                    NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: player.currentItem, queue: .main) { _ in
+-                        playCount += 1
+-                        if playCount < 2 {
+-                            player.seek(to: .zero)
+-                            player.play()
+-                        } else {
+-                            showReplayButton = true
+-                        }
++                    setupPlayer()
++                }
++                .onChange(of: videoURL) { newURL in
++                    // Update player when URL changes
++                    if newURL != currentURL {
++                        updatePlayer(with: newURL)
+                     }
+                 }
+ 
+@@ -162,6 +76,46 @@ struct VideoContainerView: View {
+                         .clipShape(Circle())
+                         .foregroundColor(.white)
+                 }
++                .buttonStyle(PlainButtonStyle())
++            }
++        }
++    }
++    
++    private func setupPlayer() {
++        player.seek(to: .zero)
++        player.play()
++        addPlayerObserver()
++    }
++    
++    private func updatePlayer(with newURL: URL) {
++        // Remove old observer
++        NotificationCenter.default.removeObserver(self, name: .AVPlayerItemDidPlayToEndTime, object: player.currentItem)
++        
++        // Update player with new URL
++        let newItem = AVPlayerItem(url: newURL)
++        player.replaceCurrentItem(with: newItem)
++        currentURL = newURL
++        
++        // Reset states
++        playCount = 0
++        showReplayButton = false
++        
++        // Setup new player
++        setupPlayer()
++    }
++    
++    private func addPlayerObserver() {
++        NotificationCenter.default.addObserver(
++            forName: .AVPlayerItemDidPlayToEndTime,
++            object: player.currentItem,
++            queue: .main
++        ) { _ in
++            playCount += 1
++            if playCount < 2 {
++                player.seek(to: .zero)
++                player.play()
++            } else {
++                showReplayButton = true
+             }
+         }
+     }
+diff --git a/Components/MachineLearningChallenge/AppModel.swift b/Components/MachineLearningChallenge/AppModel.swift
+deleted file mode 100644
+index b580f60..0000000
+--- a/Components/MachineLearningChallenge/AppModel.swift
++++ /dev/null
+@@ -1,23 +0,0 @@
+-//
+-//  AppModel.swift
+-//  MachineLearningChallenge
+-//
+-//  Created by Al Amin Dwiesta on 12/06/25.
+-//
+-
+-import SwiftUI
+-import AppKit
+-
+-class AppDelegate: NSObject, NSApplicationDelegate {
+-    func applicationDidFinishLaunching(_ notification: Notification) {
+-        // Optionally toggle as soon as the app finishes launching:
+-        toggleFullScreen()
+-    }
+-
+-    func toggleFullScreen() {
+-        // Grab the key/main window and toggle fullscreen
+-        if let window = NSApp.keyWindow ?? NSApp.windows.first {
+-            window.toggleFullScreen(nil)
+-        }
+-    }
+-}
+diff --git a/Components/MachineLearningChallenge/Assets.xcassets/AccentColor.colorset/Contents.json b/Components/MachineLearningChallenge/Assets.xcassets/AccentColor.colorset/Contents.json
+deleted file mode 100644
+index eb87897..0000000
+--- a/Components/MachineLearningChallenge/Assets.xcassets/AccentColor.colorset/Contents.json
++++ /dev/null
+@@ -1,11 +0,0 @@
+-{
+-  "colors" : [
+-    {
+-      "idiom" : "universal"
+-    }
+-  ],
+-  "info" : {
+-    "author" : "xcode",
+-    "version" : 1
+-  }
+-}
+diff --git a/Components/MachineLearningChallenge/Assets.xcassets/AppIcon.appiconset/Contents.json b/Components/MachineLearningChallenge/Assets.xcassets/AppIcon.appiconset/Contents.json
+deleted file mode 100644
+index 3f00db4..0000000
+--- a/Components/MachineLearningChallenge/Assets.xcassets/AppIcon.appiconset/Contents.json
++++ /dev/null
+@@ -1,58 +0,0 @@
+-{
+-  "images" : [
+-    {
+-      "idiom" : "mac",
+-      "scale" : "1x",
+-      "size" : "16x16"
+-    },
+-    {
+-      "idiom" : "mac",
+-      "scale" : "2x",
+-      "size" : "16x16"
+-    },
+-    {
+-      "idiom" : "mac",
+-      "scale" : "1x",
+-      "size" : "32x32"
+-    },
+-    {
+-      "idiom" : "mac",
+-      "scale" : "2x",
+-      "size" : "32x32"
+-    },
+-    {
+-      "idiom" : "mac",
+-      "scale" : "1x",
+-      "size" : "128x128"
+-    },
+-    {
+-      "idiom" : "mac",
+-      "scale" : "2x",
+-      "size" : "128x128"
+-    },
+-    {
+-      "idiom" : "mac",
+-      "scale" : "1x",
+-      "size" : "256x256"
+-    },
+-    {
+-      "idiom" : "mac",
+-      "scale" : "2x",
+-      "size" : "256x256"
+-    },
+-    {
+-      "idiom" : "mac",
+-      "scale" : "1x",
+-      "size" : "512x512"
+-    },
+-    {
+-      "idiom" : "mac",
+-      "scale" : "2x",
+-      "size" : "512x512"
+-    }
+-  ],
+-  "info" : {
+-    "author" : "xcode",
+-    "version" : 1
+-  }
+-}
+diff --git a/Components/MachineLearningChallenge/Assets.xcassets/Contents.json b/Components/MachineLearningChallenge/Assets.xcassets/Contents.json
+deleted file mode 100644
+index 73c0059..0000000
+--- a/Components/MachineLearningChallenge/Assets.xcassets/Contents.json
++++ /dev/null
+@@ -1,6 +0,0 @@
+-{
+-  "info" : {
+-    "author" : "xcode",
+-    "version" : 1
+-  }
+-}
+diff --git a/Components/MachineLearningChallenge/Assets.xcassets/LEVELSELECT_BG.imageset/Contents.json b/Components/MachineLearningChallenge/Assets.xcassets/LEVELSELECT_BG.imageset/Contents.json
+deleted file mode 100644
+index fbb4a6c..0000000
+--- a/Components/MachineLearningChallenge/Assets.xcassets/LEVELSELECT_BG.imageset/Contents.json
++++ /dev/null
+@@ -1,21 +0,0 @@
+-{
+-  "images" : [
+-    {
+-      "filename" : "LEVELSELECT_BG.png",
+-      "idiom" : "universal",
+-      "scale" : "1x"
+-    },
+-    {
+-      "idiom" : "universal",
+-      "scale" : "2x"
+-    },
+-    {
+-      "idiom" : "universal",
+-      "scale" : "3x"
+-    }
+-  ],
+-  "info" : {
+-    "author" : "xcode",
+-    "version" : 1
+-  }
+-}
+diff --git a/Components/MachineLearningChallenge/Assets.xcassets/LEVELSELECT_BG.imageset/LEVELSELECT_BG.png b/Components/MachineLearningChallenge/Assets.xcassets/LEVELSELECT_BG.imageset/LEVELSELECT_BG.png
+deleted file mode 100644
+index 4aeddd5..0000000
+Binary files a/Components/MachineLearningChallenge/Assets.xcassets/LEVELSELECT_BG.imageset/LEVELSELECT_BG.png and /dev/null differ
+diff --git a/Components/MachineLearningChallenge/Assets.xcassets/Mereka_Lindan_Fast_Backlight_1.dataset/Contents.json b/Components/MachineLearningChallenge/Assets.xcassets/Mereka_Lindan_Fast_Backlight_1.dataset/Contents.json
+deleted file mode 100644
+index 88e3d13..0000000
+--- a/Components/MachineLearningChallenge/Assets.xcassets/Mereka_Lindan_Fast_Backlight_1.dataset/Contents.json
++++ /dev/null
+@@ -1,12 +0,0 @@
+-{
+-  "data" : [
+-    {
+-      "filename" : "Mereka_Lindan_Fast_Backlight_1.mov",
+-      "idiom" : "universal"
+-    }
+-  ],
+-  "info" : {
+-    "author" : "xcode",
+-    "version" : 1
+-  }
+-}
+diff --git a/Components/MachineLearningChallenge/Assets.xcassets/Mereka_Lindan_Fast_Backlight_1.dataset/Mereka_Lindan_Fast_Backlight_1.mov b/Components/MachineLearningChallenge/Assets.xcassets/Mereka_Lindan_Fast_Backlight_1.dataset/Mereka_Lindan_Fast_Backlight_1.mov
+deleted file mode 100644
+index 150e82d..0000000
+Binary files a/Components/MachineLearningChallenge/Assets.xcassets/Mereka_Lindan_Fast_Backlight_1.dataset/Mereka_Lindan_Fast_Backlight_1.mov and /dev/null differ
+diff --git a/Components/MachineLearningChallenge/Camera/CameraModel.swift b/Components/MachineLearningChallenge/Camera/CameraModel.swift
+deleted file mode 100644
+index dfda889..0000000
+--- a/Components/MachineLearningChallenge/Camera/CameraModel.swift
++++ /dev/null
+@@ -1,164 +0,0 @@
+-//
+-//  CameraModel.swift
+-//  MachineLearningChallenge
+-//
+-//  Created by Al Amin Dwiesta on 12/06/25.
+-//
+-
+-import SwiftUI
+-import AVFoundation
+-import Vision
+-import CoreML
+-
+-/// Bridges an AVCaptureVideoPreviewLayer into SwiftUI on macOS
+-struct CameraPreview: NSViewRepresentable {
+-    let session: AVCaptureSession
+-
+-    func makeNSView(context: Context) -> NSView {
+-        let view = NSView(frame: .zero)
+-        view.wantsLayer = true
+-        
+-        // attach the video preview
+-        let previewLayer = AVCaptureVideoPreviewLayer(session: session)
+-        previewLayer.videoGravity = .resizeAspectFill
+-        previewLayer.setAffineTransform(CGAffineTransform(scaleX: -1, y: 1))
+-        previewLayer.frame = view.bounds
+-        previewLayer.autoresizingMask = [.layerWidthSizable, .layerHeightSizable]
+-        view.layer?.addSublayer(previewLayer)
+-        
+-        return view
+-    }
+-
+-    func updateNSView(_ nsView: NSView, context: Context) {
+-        guard let previewLayer = nsView.layer?.sublayers?.first as? AVCaptureVideoPreviewLayer else {
+-            return
+-        }
+-        previewLayer.frame = nsView.bounds
+-    }
+-}
+-
+-final class CameraModel: NSObject, ObservableObject {
+-    // MARK: – public
+-    @Published var lastPrediction = "…"
+-    let session = AVCaptureSession()
+-    
+-    // MARK: – private
+-    private let classifier: SIBIClassifier
+-    private var poseBuffer = [[Float]]()   // each frame: 21 joints × 3 floats
+-    private let jointNames: [VNHumanHandPoseObservation.JointName] = [
+-      .wrist,
+-      .thumbCMC, .thumbMP, .thumbIP, .thumbTip,
+-      .indexMCP, .indexPIP, .indexDIP, .indexTip,
+-      .middleMCP, .middlePIP, .middleDIP, .middleTip,
+-      .ringMCP, .ringPIP, .ringDIP, .ringTip,
+-      .littleMCP, .littlePIP, .littleDIP, .littleTip
+-    ]
+-    
+-    override init() {
+-        // 1) instantiate your compiled model
+-        guard let m = try? SIBIClassifier() else {
+-            fatalError("Failed to load SIBIClassifier.mlmodel")
+-        }
+-        classifier = m
+-        
+-        super.init()
+-        setupSession()
+-    }
+-    
+-    func start() {
+-        session.startRunning()
+-    }
+-    
+-    private func setupSession() {
+-        session.sessionPreset = .high
+-        guard
+-          let cam = AVCaptureDevice.default(for: .video),
+-          let input = try? AVCaptureDeviceInput(device: cam),
+-          session.canAddInput(input)
+-        else { fatalError("Cannot access camera") }
+-        session.addInput(input)
+-
+-        let out = AVCaptureVideoDataOutput()
+-        out.setSampleBufferDelegate(self, queue: .global(qos: .userInitiated))
+-        guard session.canAddOutput(out) else { fatalError("Cannot add output") }
+-        session.addOutput(out)
+-    }
+-    
+-    private func classifyIfReady() {
+-        guard poseBuffer.count == 90 else { return }   // wait until buffer is full
+-        
+-        // build the MLMultiArray [90, 3, 21]
+-        guard let arr = try? MLMultiArray(shape: [90,3,21], dataType: .float32) else {
+-            return
+-        }
+-        
+-        for t in 0..<90 {
+-            let frame = poseBuffer[t]        // 63 floats
+-            for j in 0..<21 {
+-                let base = j*3
+-                arr[[t, 0, j] as [NSNumber]] = frame[base + 0] as NSNumber
+-                arr[[t, 1, j] as [NSNumber]] = frame[base + 1] as NSNumber
+-                arr[[t, 2, j] as [NSNumber]] = frame[base + 2] as NSNumber
+-            }
+-        }
+-        
+-        // run your model
+-        let input  = SIBIClassifierInput(poses: arr)
+-        guard let out = try? classifier.prediction(input: input) else { return }
+-        
+-        DispatchQueue.main.async {
+-            self.lastPrediction = out.label   // or use out.labelProbabilities
+-        }
+-    }
+-}
+-
+-extension CameraModel: AVCaptureVideoDataOutputSampleBufferDelegate {
+-    func captureOutput(_ output: AVCaptureOutput,
+-                       didOutput sampleBuffer: CMSampleBuffer,
+-                       from connection: AVCaptureConnection) {
+-        guard let buf = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
+-        let handler = VNImageRequestHandler(cvPixelBuffer: buf, options: [:])
+-        let req = VNDetectHumanHandPoseRequest()
+-        req.maximumHandCount = 1
+-        
+-        do {
+-            try handler.perform([req])
+-            guard let obs = req.results?.first else {
+-                // no hand → pad a zero‐frame
+-                poseBuffer.append([Float](repeating: 0, count: 21*3))
+-                breakBufferIfNeeded()
+-                return
+-            }
+-            
+-            let points = try obs.recognizedPoints(.all)
+-            var frameArray = [Float]()
+-            frameArray.reserveCapacity(21*3)
+-            
+-            for name in jointNames {
+-                if let p = points[name] {
+-                    frameArray += [Float(p.location.x),
+-                                   Float(p.location.y),
+-                                   Float(p.confidence)]
+-                } else {
+-                    frameArray += [0,0,0]
+-                }
+-            }
+-            
+-            poseBuffer.append(frameArray)
+-            breakBufferIfNeeded()
+-            
+-        } catch {
+-            // if pose detection fails, pad zeros
+-            poseBuffer.append([Float](repeating: 0, count: 21*3))
+-            breakBufferIfNeeded()
+-        }
+-        
+-        classifyIfReady()
+-    }
+-    
+-    private func breakBufferIfNeeded() {
+-        if poseBuffer.count > 90 {
+-            poseBuffer.removeFirst(poseBuffer.count - 90)
+-        }
+-    }
+-}
+diff --git a/Components/MachineLearningChallenge/ContentView.swift b/Components/MachineLearningChallenge/ContentView.swift
+deleted file mode 100644
+index cf25594..0000000
+--- a/Components/MachineLearningChallenge/ContentView.swift
++++ /dev/null
+@@ -1,26 +0,0 @@
+-import SwiftUI
+-import AppKit       // for NSView
+-import AVFoundation // for AVCaptureSession
+-
+-struct ContentView: View {
+-    @StateObject private var camera = CameraModel()
+-
+-    var body: some View {
+-        VStack {
+-            // 1) The live preview
+-            CameraPreview(session: camera.session)
+-                .frame(width: 640, height: 480)
+-                .cornerRadius(8)
+-                .shadow(radius: 4)
+-            
+-            // 2) The last predicted label
+-            Text(camera.lastPrediction)
+-                .font(.title)
+-                .padding(.top, 8)
+-        }
+-        .padding()
+-        .onAppear { camera.start() }
+-    }
+-}
+-
+-
+diff --git a/Components/MachineLearningChallenge/Info.plist b/Components/MachineLearningChallenge/Info.plist
+deleted file mode 100644
+index 7dcaefc..0000000
+--- a/Components/MachineLearningChallenge/Info.plist
++++ /dev/null
+@@ -1,8 +0,0 @@
+-<?xml version="1.0" encoding="UTF-8"?>
+-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+-<plist version="1.0">
+-<dict>
+-	<key>NSCameraUsageDescription</key>
+-	<string>akses camera</string>
+-</dict>
+-</plist>
+diff --git a/Components/MachineLearningChallenge/LearningPageView.swift b/Components/MachineLearningChallenge/LearningPageView.swift
+deleted file mode 100644
+index 2f1edac..0000000
+--- a/Components/MachineLearningChallenge/LearningPageView.swift
++++ /dev/null
+@@ -1,62 +0,0 @@
+-//
+-//  LearningPageView.swift
+-//  MachineLearningChallenge
+-//
+-//  Created by Lin Dan Christiano on 13/06/25.
+-//
+-
+-import Foundation
+-import SwiftUI
+-
+-struct LearningPageView: View {
+-    var body: some View {
+-        ZStack{
+-            VStack {
+-                GeometryReader {
+-                    geometry in
+-                    HStack {
+-                        Image(systemName: "chevron.left")
+-                            .frame(width: 32, height: 48)
+-                            .fontWeight(.bold)
+-                        Text("Pronoun")
+-                            .font(.system(size: 22, weight: .bold))
+-                    }
+-                    .frame(width: geometry.size.width, alignment: .leading)
+-                    //                .padding(8)
+-                    .background(Color.gray)
+-                    .clipShape(RoundedRectangle(cornerRadius: 8))
+-                    .padding(.top)
+-                    
+-                    HStack (alignment: .bottom){
+-                        ZStack{
+-                            Color.red
+-//                            Text("Kaka")
+-                        }
+-                        .frame(width: geometry.size.width * 0.35, height: geometry.size.height * 0.9)
+-                        ZStack{
+-                            VStack {
+-                                Color.blue
+-                            }
+-                            
+-                        }
+-                        .frame(width: geometry.size.width * 0.64, height: geometry.size.height * 0.90)
+-                        
+-                    }
+-                    .frame(height: geometry.size.height)
+-    //                .background(Color.cyan)
+-                    .padding(.top, 25)
+-                }
+-            }
+-            .padding(8)
+-            ZStack {
+-                Color.gray
+-                    .frame(width: 600, height: 50)
+-            }
+-        }
+-        
+-    }
+-}
+-
+-//#Preview {
+-//    LearningPageView()
+-//}
+diff --git a/Components/MachineLearningChallenge/MachineLearningChallenge.entitlements b/Components/MachineLearningChallenge/MachineLearningChallenge.entitlements
+deleted file mode 100644
+index f6ea603..0000000
+--- a/Components/MachineLearningChallenge/MachineLearningChallenge.entitlements
++++ /dev/null
+@@ -1,12 +0,0 @@
+-<?xml version="1.0" encoding="UTF-8"?>
+-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+-<plist version="1.0">
+-<dict>
+-	<key>com.apple.security.app-sandbox</key>
+-	<true/>
+-	<key>com.apple.security.device.camera</key>
+-	<true/>
+-	<key>com.apple.security.files.user-selected.read-only</key>
+-	<true/>
+-</dict>
+-</plist>
+diff --git a/Components/MachineLearningChallenge/MachineLearningChallengeApp.swift b/Components/MachineLearningChallenge/MachineLearningChallengeApp.swift
+deleted file mode 100644
+index 1d844a7..0000000
+--- a/Components/MachineLearningChallenge/MachineLearningChallengeApp.swift
++++ /dev/null
+@@ -1,35 +0,0 @@
+-//
+-//  MachineLearningChallengeApp.swift
+-//  MachineLearningChallenge
+-//
+-//  Created by Al Amin Dwiesta on 11/06/25.
+-//
+-
+-import SwiftUI
+-import TipKit
+-
+-@main
+-struct MachineLearningChallengeApp: App {
+-    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+-    //MARK: GATAU CARA APUS APPSTORAGE/APPNYA COMMENT/Uncomment ini buat hapus appstorage for now
+-    private let shouldWipeAppStorage = true
+-
+-    init() {
+-        #if DEBUG
+-        if shouldWipeAppStorage {
+-            let bundleID = Bundle.main.bundleIdentifier!
+-            UserDefaults.standard.removePersistentDomain(forName: bundleID)
+-            UserDefaults.standard.synchronize()
+-            print("🔨 AppStorage wiped for \(bundleID)")
+-        }
+-        try? Tips.resetDatastore()
+-        #endif
+-    }
+-    var body: some Scene {
+-        WindowGroup {
+-            MainView()
+-//            ContentView()
+-                .frame(minWidth: 800, minHeight: 600)
+-        }
+-    }
+-}
+diff --git a/Components/MachineLearningChallenge/Main/MainModel.swift b/Components/MachineLearningChallenge/Main/MainModel.swift
+deleted file mode 100644
+index 97819c6..0000000
+--- a/Components/MachineLearningChallenge/Main/MainModel.swift
++++ /dev/null
+@@ -1,35 +0,0 @@
+-//
+-//  MainModel.swift
+-//  MachineLearningChallenge
+-//
+-//  Created by Al Amin Dwiesta on 13/06/25.
+-//
+-
+-import Foundation
+-
+-// MARK: - Model
+-
+-struct Level: Identifiable {
+-    let id: Int
+-    let title: String
+-    let content: String
+-}
+-
+-let levels: [Level] = [
+-    .init(id: 1,
+-          title: "Kata Ganti",
+-          content:
+-                  """
+-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor \
+-                  incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud \
+-                  exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute \
+-                  irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla \
+-                  pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia \
+-                  deserunt mollit anim id est laborum.
+-                  """
+-         ),
+-    .init(id: 2, title: "Level 2 Title", content: "Detail content for level 2..."),
+-    .init(id: 3, title: "Level 3 Title", content: "Detail content for level 3..."),
+-    .init(id: 4, title: "Level 4 Title", content: "Detail content for level 4..."),
+-    .init(id: 5, title: "Level 5 Title", content: "Detail content for level 5...")
+-]
+diff --git a/Components/MachineLearningChallenge/Main/MainView.swift b/Components/MachineLearningChallenge/Main/MainView.swift
+deleted file mode 100644
+index 4c9dd51..0000000
+--- a/Components/MachineLearningChallenge/Main/MainView.swift
++++ /dev/null
+@@ -1,115 +0,0 @@
+-//
+-//  MainView.swift
+-//  MachineLearningChallenge
+-//
+-//  Created by Al Amin Dwiesta on 12/06/25.
+-//
+-import SwiftUI
+-
+-struct MainView: View {
+-    @State private var selectedLevel: Int? = nil
+-    @State private var navigateToTesting: Bool = false
+-    
+-    var body: some View {
+-        NavigationStack {
+-            GeometryReader { geo in
+-                ScrollViewReader { proxy in
+-                    ScrollView(.vertical, showsIndicators: true) {
+-                        ZStack {
+-                            Image("LEVELSELECT_BG")
+-                                .resizable()
+-                                .scaledToFill()
+-                                .frame(width: geo.size.width,
+-                                       height: geo.size.height)
+-                            VStack() {
+-                                Spacer().frame(height: 72)
+-                                VStack(spacing: 150) {
+-                                    ForEach(levels.reversed()) { level in
+-                                        RectangleLevelView(
+-                                            levelID: level.id,
+-                                            isSelected: level.id == selectedLevel
+-                                        )
+-                                        .id(level.id)
+-                                        .contentShape(Rectangle())
+-                                        .onTapGesture {
+-                                            withAnimation(.spring()) {
+-                                                selectedLevel = (selectedLevel == level.id ? nil : level.id)
+-                                            }
+-                                        }
+-                                        .popover(
+-                                            isPresented: Binding(
+-                                                get:  { selectedLevel == level.id },
+-                                                set: { if !$0 { selectedLevel = nil } }
+-                                            ),
+-                                            arrowEdge: .trailing
+-                                        ) {
+-                                            ModalView(level: level){
+-                                                navigateToTesting = true
+-                                            }
+-                                            .frame(
+-                                                minWidth: 300,
+-                                                idealWidth: 400,
+-                                                maxWidth: 600,
+-                                                minHeight: 200,
+-                                                idealHeight: 700,
+-                                                maxHeight: 1200
+-                                            )
+-                                            .padding()
+-                                        }
+-                                    }
+-                                }
+-                            }
+-                            .padding()
+-                        }
+-                        .padding(.vertical, 110)
+-                        .frame(minHeight: geo.size.height + 220)
+-                    }
+-                    .onAppear {
+-                        // scroll to Level 1 at launch:
+-                        if let firstID = levels.first?.id {
+-                            proxy.scrollTo(firstID, anchor: .bottom)
+-                        }
+-                    }
+-                }
+-                .navigationDestination(isPresented: $navigateToTesting) {
+-                    TestingView(onBack: { navigateToTesting = false })
+-                }
+-            }
+-        }
+-    }
+-}
+-
+-struct ModalView: View {
+-    let level: Level
+-    let onStartLearning: () -> Void
+-    
+-    var body: some View {
+-        VStack(alignment: .leading, spacing: 16) {
+-            Text(level.title)
+-                .font(.title).bold()
+-            
+-            ScrollView {
+-                Text(level.content)
+-                    .fixedSize(horizontal: false, vertical: true)
+-            }
+-            
+-            Spacer()
+-            
+-            Button("Mulai Belajar") {
+-                onStartLearning()
+-            }
+-            .buttonStyle(PrimaryButtonStyle())
+-            
+-            Button("Ulangi Boss Battle") { /*…*/ }
+-                .buttonStyle(SecondaryButtonStyle())
+-        }
+-    }
+-}
+-
+-// MARK: - Preview
+-
+-struct ContentView_Previews: PreviewProvider {
+-    static var previews: some View {
+-        MainView()
+-    }
+-}
+diff --git a/Components/MachineLearningChallenge/SIBIClassifier.mlmodel b/Components/MachineLearningChallenge/SIBIClassifier.mlmodel
+deleted file mode 100644
+index ff55b83..0000000
+Binary files a/Components/MachineLearningChallenge/SIBIClassifier.mlmodel and /dev/null differ
+diff --git a/Components/MachineLearningChallenge/TestingView.swift b/Components/MachineLearningChallenge/TestingView.swift
+deleted file mode 100644
+index 7c168ac..0000000
+--- a/Components/MachineLearningChallenge/TestingView.swift
++++ /dev/null
+@@ -1,409 +0,0 @@
+-import SwiftUI
+-import AppKit       // for NSView
+-import AVFoundation // for AVCaptureSession
+-import TipKit
+-import AVKit
+-
+-struct videoTips: Tip {
+-    var title: Text  {
+-        Text("Watch Tutorial First")
+-    }
+-    var message: Text? {
+-        Text("by watching this video first, you can grasp how to do the sign language")
+-    }
+-    var image: Image? {
+-        Image(systemName: "star")
+-    }
+-}
+-
+-struct selectWordsTips: Tip {
+-    var title: Text  {
+-        Text("Click Here to change Words")
+-    }
+-    var message: Text? {
+-        Text("Click Here to change Words")
+-    }
+-    var image: Image? {
+-        Image(systemName: "star")
+-    }
+-}
+-
+-struct videoPreviewTips: Tip {
+-    var title: Text  {
+-        Text("Peragakan ulang")
+-    }
+-    var message: Text? {
+-        Text("peragakan ulang")
+-    }
+-    var image: Image? {
+-        Image(systemName: "star")
+-    }
+-}
+-
+-struct TestingView: View {
+-    
+-    @State private var player = AVPlayer()
+-    @StateObject private var camera = CameraModel()
+-    let onBack: () -> Void
+-    // State untuk mengontrol apakah kartu terbuka atau tertutup
+-    @State private var isCardOpen: Bool = false
+-    @State private var selectedWord: String?     // ← track user’s choice
+-    @State private var showOverlay: Bool = false   // show big check
+-    @State private var showCompletionModal = false
+-    
+-    let pronouns = ["Kamu", "Dia", "Kita"]
+-
+-    
+-    
+-    var videotips = videoTips()
+-    var videopreviewtips = videoPreviewTips()
+-    var selectwordstips = selectWordsTips()
+-    
+-    @AppStorage("completedPronounsRaw") private var completedPronounsRaw: String = ""
+-    private var completedWords: Set<String> {
+-        get { Set(completedPronounsRaw
+-            .split(separator: ",")
+-            .map { String($0) }
+-            .filter { !$0.isEmpty }) }
+-        set { completedPronounsRaw = newValue.sorted().joined(separator: ",") }
+-    }
+-    
+-    // Tinggi penuh kartu saat terbuka
+-    let fullCardHeight: CGFloat = 250
+-    
+-    // Seberapa banyak kartu yang terlihat saat tertutup (di bagian bawah layar)
+-    let peekHeight: CGFloat = 40
+-    
+-    // untuk menyimpan sekarang di kata yang mana melalui index array pronouns
+-    @State private var currentIndex: Int = 0
+-    
+-    // function untuk update kata yang dipilih setelah pencet next/previous
+-    func updateSelectedWord(to index: Int) {
+-        let boundedIndex = min(max(index, 0), pronouns.count - 1)
+-        currentIndex = boundedIndex
+-        selectedWord = pronouns[boundedIndex]
+-    }
+-
+-
+-    
+-    var body: some View {
+-        ZStack {
+-            // MARK: - Konten Utama Aplikasi
+-            Color.gray.opacity(0.1)
+-                .ignoresSafeArea()
+-                .overlay(
+-                    ZStack{
+-                        VStack {
+-                            GeometryReader {
+-                                geometry in
+-                                HStack {
+-                                    Button(action: {
+-                                        onBack()
+-                                    }) {
+-                                        HStack {
+-                                            Image(systemName: "chevron.left")
+-                                                .frame(width: 32, height: 48)
+-                                                .fontWeight(.bold)
+-                                            Text("Pilih Level")
+-                                                .font(.system(size: 20, weight: .semibold))
+-                                        }
+-                                        .padding(.trailing)
+-                                    }
+-                                    Spacer()
+-                                    Text(camera.lastPrediction)
+-                                        .font(.system(size: 24, weight: .bold))
+-                                        .padding(.trailing, 112)
+-                                    Spacer()
+-                                }
+-                                .frame(width: geometry.size.width, alignment: .leading)
+-                                .background(Color.gray)
+-                                .clipShape(RoundedRectangle(cornerRadius: 8))
+-                                .padding(.top)
+-                                
+-                                HStack (alignment: .center, spacing: 24){
+-                                    ZStack {
+-                                        VideoContainerView(videoURL: Bundle.main.url(forResource: "mereka", withExtension: "mov")!)
+-                                            .clipShape(RoundedRectangle(cornerRadius: 8))
+-                                            .frame(width: geometry.size.width * 0.35, height: geometry.size.height * 0.9)
+-                                            .background(Color.red.opacity(0.2))
+-
+-                                        VStack {
+-                                            HStack(spacing: 16) {
+-                                                Button(action: {
+-                                                    updateSelectedWord(to: currentIndex - 1)
+-                                                }) {
+-                                                    Image(systemName: "chevron.left.circle.fill")
+-                                                        .resizable()
+-                                                        .frame(width: 48, height: 48)
+-                                                        .foregroundColor(currentIndex > 0 ? .white : .gray)
+-                                                }
+-                                                .disabled(currentIndex == 0)
+-                                                .buttonStyle(PlainButtonStyle())
+-
+-
+-                                                Text(pronouns[currentIndex])
+-                                                    .frame(width: 100)
+-                                                    .font(.title)
+-                                                    .foregroundColor(.white)
+-                                                    .padding(.horizontal, 12)
+-                                                    .padding(.vertical, 6)
+-                                                    .background(Color.black.opacity(0.5))
+-                                                    .clipShape(Capsule())
+-                                                    
+-
+-                                                Button(action: {
+-                                                    updateSelectedWord(to: currentIndex + 1)
+-                                                }) {
+-                                                    Image(systemName: "chevron.right.circle.fill")
+-                                                        .resizable()
+-                                                        .frame(width: 48, height: 48)
+-                                                        .foregroundColor(currentIndex < pronouns.count - 1 ? .white : .gray)
+-                                                }
+-                                                .disabled(currentIndex == pronouns.count - 1)
+-                                                .buttonStyle(PlainButtonStyle())
+-
+-                                            }
+-//                                            .padding(.bottom, 20)
+-                                            .frame(width: geometry.size.width * 0.35, height: 80, alignment: .center)
+-                                            .background(Color.gray.opacity(0.5))
+-                                            Spacer()
+-                                        }
+-
+-                                        TipView(videotips, arrowEdge: .top)
+-                                            .tipBackground(Color.black.opacity(0.6))
+-                                            .fixedSize(horizontal: true, vertical: false)
+-                                    }
+-
+-                                    .clipShape(RoundedRectangle(cornerRadius: 8))
+-                                    .frame(width: geometry.size.width * 0.35, height: geometry.size.height * 0.9)
+-                                    ZStack{
+-                                        CameraPreview(session: camera.session)
+-                                            .cornerRadius(8)
+-                                            .shadow(radius: 4)
+-                                        TipView(videopreviewtips, arrowEdge: .top)
+-                                            .tipBackground(Color.black.opacity(0.6))
+-                                            .fixedSize(horizontal: true, vertical: false)
+-                                    }
+-                                    .clipShape(RoundedRectangle(cornerRadius: 8))
+-                                    .frame(width: geometry.size.width * 0.635, height: geometry.size.height * 0.75)
+-                                    
+-                                }
+-                                .frame(height: geometry.size.height)
+-                                .padding(.top, 35)
+-                            }
+-                        }
+-                        .padding(8)
+-                    }
+-                )
+-                .onTapGesture {
+-                    if isCardOpen{
+-                        isCardOpen.toggle()
+-                    }
+-                }
+-            
+-            // MARK: - Komponen Pembuka Kartu
+-            VStack {
+-                Spacer()
+-                ZStack{
+-                CardView(
+-                    isCardOpen: $isCardOpen,
+-                    selectedWord: $selectedWord,
+-                    completedWords: completedWords,
+-                    pronouns: pronouns
+-                )
+-                .clipShape(UnevenRoundedRectangle(topLeadingRadius: 25, topTrailingRadius: 25))
+-                .frame(height: fullCardHeight)
+-                .offset(y: isCardOpen ? 0 : fullCardHeight - peekHeight)
+-                .animation(.interactiveSpring(response: 0.5, dampingFraction: 0.8, blendDuration: 0.2), value: isCardOpen)
+-                    TipView(selectwordstips,arrowEdge: .bottom)
+-                        .padding(.bottom,-50)
+-                        .tipBackground(Color.black.opacity(0.6))
+-                        .fixedSize(horizontal: true, vertical: false)
+-                }
+-            }
+-            .ignoresSafeArea(.all, edges: .bottom)
+-            
+-            //MARK: Overlay cek bener apa engga
+-            if showOverlay {
+-                Color.black.opacity(0.4).ignoresSafeArea()
+-                Image(systemName: "checkmark.circle.fill")
+-                    .resizable()
+-                    .frame(width: 150, height: 150)
+-                    .foregroundColor(.green)
+-                    .transition(.scale.combined(with: .opacity))
+-            }
+-            
+-        }
+-        .navigationBarBackButtonHidden(true)
+-        .onAppear { camera.start() }
+-        //MARK: uncomment this on prod
+-        .task {
+-            // Configure and load your tips at app launch.
+-            do {
+-                try Tips.configure()
+-            }
+-            catch {
+-                // Handle TipKit errors
+-                print("Error initializing TipKit \(error.localizedDescription)")
+-            }
+-        }
+-        .onChange(of: camera.lastPrediction) { newPrediction in
+-            guard let picked = selectedWord,
+-                  picked == newPrediction
+-            else { return }
+-
+-            // ✅ Update completedWords jika belum ada
+-            var updated = completedWords
+-            if !updated.contains(picked) {
+-                updated.insert(picked)
+-                completedPronounsRaw = updated.sorted().joined(separator: ",")
+-            }
+-
+-            // ✅ Tampilkan overlay (checkmark hijau)
+-            withAnimation {
+-                showOverlay = true
+-            }
+-            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+-                withAnimation {
+-                    showOverlay = false
+-                }
+-            }
+-
+-            // ✅ Cek apakah semua pronouns sudah selesai
+-            let allPronouns = pronouns
+-            if allPronouns.allSatisfy({ updated.contains($0) }) {
+-                showCompletionModal = true
+-            }
+-        }
+-
+-        .sheet(isPresented: $showCompletionModal) {
+-            VStack(spacing: 20) {
+-                Text("🎉 Kamu sudah membuka Training Ground!")
+-                    .font(.title)
+-                    .multilineTextAlignment(.center)
+-                    .padding()
+-
+-                Text("Ingin mencoba skill-mu?")
+-                    .font(.headline)
+-
+-                HStack(spacing: 20) {
+-                    Button("Let's Go") {
+-                        // Navigasi ke halaman berikutnya
+-                        print("User chose to go!")
+-                        showCompletionModal = false
+-                    }
+-                    .padding()
+-                    .frame(maxWidth: .infinity)
+-                    .background(Color.blue)
+-                    .foregroundColor(.white)
+-                    .cornerRadius(10)
+-
+-                    Button("Do it Later") {
+-                        showCompletionModal = false
+-                    }
+-                    .padding()
+-                    .frame(maxWidth: .infinity)
+-                    .background(Color.gray.opacity(0.3))
+-                    .foregroundColor(.primary)
+-                    .cornerRadius(10)
+-                }
+-                .padding(.horizontal)
+-            }
+-            .padding()
+-            .frame(width: 400, height: 300)
+-        }
+-
+-    }
+-}
+-
+-// MARK: - CardView (Tampilan Kartu Itu Sendiri)
+-struct CardView: View {
+-    @Binding var isCardOpen: Bool
+-    @Binding var selectedWord: String?        // ← bound from parent
+-    let completedWords: Set<String>
+-    
+-    let pronouns : [String]
+-
+-    var body: some View {
+-        ZStack {
+-            UnevenRoundedRectangle(topLeadingRadius: 25, topTrailingRadius: 25)
+-                .fill(LinearGradient(gradient: Gradient(colors: [Color.blue.opacity(0.8), Color.blue]), startPoint: .top, endPoint: .bottom))
+-                .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: -5)
+-            
+-            VStack {
+-                // MARK: Chevron untuk Animasi
+-                HStack {
+-                    Spacer()
+-                    Text(isCardOpen ? "Tutup" : "Ingin Belajar Kata Ganti Lain? Pilih Disini!")
+-                    Image(systemName: "chevron.up") // Menggunakan ikon chevron ke atas
+-                        .font(.title2) // Ukuran ikon
+-                        .foregroundColor(.white.opacity(0.8))
+-                    //                        .padding(.bottom, isCardOpen ? 20 : 0)
+-                        .rotationEffect(.degrees(isCardOpen ? 180 : 0))
+-                        .animation(.interactiveSpring(response: 0.5, dampingFraction: 0.8, blendDuration: 0.2), value: isCardOpen)
+-                    Spacer()
+-                }
+-                .frame(width: .infinity)
+-                .padding(.vertical, 16)
+-                .background(LinearGradient(gradient: Gradient(colors: [Color.blue.opacity(0.4), Color.blue]), startPoint: .top, endPoint: .bottom))
+-                .onTapGesture {
+-                    isCardOpen.toggle()
+-                }
+-                Spacer()
+-                if isCardOpen {
+-                    Text("Pilih Kata Ganti")
+-                        .font(.headline)
+-                        .foregroundColor(.white)
+-                        .padding(.bottom, 8)
+-                    
+-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 3), spacing: 10) {
+-                        ForEach(pronouns, id: \.self) { word in
+-                            Button(action: {
+-                                // 1️⃣ record selection
+-                                selectedWord = word
+-                                print("\(word) tapped")
+-                                isCardOpen.toggle()
+-                            }) {
+-                                Text(word)
+-                                    .frame(maxWidth: .infinity, minHeight: 40)
+-                                    .background(Color.white.opacity(0.2))
+-                                    .foregroundColor(.white)
+-                                    .cornerRadius(8)
+-                                Spacer()
+-                                if completedWords.contains(word) {
+-                                    Image(systemName: "checkmark.circle.fill")
+-                                        .foregroundColor(.yellow)
+-                                }
+-                                
+-                                if selectedWord == word {
+-                                    Image(systemName: "hand.point.up.left.fill")
+-                                        .foregroundColor(.white.opacity(0.7))
+-                                }
+-                            }
+-                            .buttonStyle(PlainButtonStyle())
+-                            
+-                        }
+-                    }
+-                    .padding(.horizontal)
+-                    .padding(.bottom, 50)
+-                } else {
+-                    Spacer()
+-                    Text("Tekan Chevron untuk Membuka")
+-                        .font(.subheadline)
+-                        .foregroundColor(.white.opacity(0.9))
+-                        .padding(.bottom, 20)
+-                }
+-            }
+-        }
+-        .frame(width: 1200)
+-        
+-    }
+-}
+-
+-// MARK: - Preview untuk Xcode Canvas
+-//struct TestingView_Previews: PreviewProvider {
+-//    static var previews: some View {
+-//        TestingView()
+-//            .frame(width: 1500, height: 600)
+-//    }
+-//}
+diff --git a/Components/MachineLearningChallenge/aku.mov b/Components/MachineLearningChallenge/aku.mov
+deleted file mode 100644
+index 5415c86..0000000
+Binary files a/Components/MachineLearningChallenge/aku.mov and /dev/null differ
+diff --git a/Components/MachineLearningChallenge/mereka.mov b/Components/MachineLearningChallenge/mereka.mov
+deleted file mode 100644
+index 150e82d..0000000
+Binary files a/Components/MachineLearningChallenge/mereka.mov and /dev/null differ
+diff --git a/MachineLearningChallenge.xcodeproj/project.pbxproj b/MachineLearningChallenge.xcodeproj/project.pbxproj
+index 50dd9b1..e011963 100644
+--- a/MachineLearningChallenge.xcodeproj/project.pbxproj
++++ b/MachineLearningChallenge.xcodeproj/project.pbxproj
+@@ -16,7 +16,7 @@
+ 			path = Components;
+ 			sourceTree = "<group>";
+ 		};
+-		61E07BBA2DF9131D00377115 /* MachineLearningChallenge */ = {
++		A52181772E010E3500303D0F /* MachineLearningChallenge */ = {
+ 			isa = PBXFileSystemSynchronizedRootGroup;
+ 			path = MachineLearningChallenge;
+ 			sourceTree = "<group>";
+@@ -37,7 +37,7 @@
+ 		61E07BAF2DF9131D00377115 = {
+ 			isa = PBXGroup;
+ 			children = (
+-				61E07BBA2DF9131D00377115 /* MachineLearningChallenge */,
++				A52181772E010E3500303D0F /* MachineLearningChallenge */,
+ 				61E07BB92DF9131D00377115 /* Products */,
+ 				6135968B2DFBAC12004A55C4 /* Components */,
+ 			);
+@@ -68,7 +68,7 @@
+ 			);
+ 			fileSystemSynchronizedGroups = (
+ 				6135968B2DFBAC12004A55C4 /* Components */,
+-				61E07BBA2DF9131D00377115 /* MachineLearningChallenge */,
++				A52181772E010E3500303D0F /* MachineLearningChallenge */,
+ 			);
+ 			name = MachineLearningChallenge;
+ 			packageProductDependencies = (
+@@ -262,7 +262,7 @@
+ 				CODE_SIGN_STYLE = Automatic;
+ 				COMBINE_HIDPI_IMAGES = YES;
+ 				CURRENT_PROJECT_VERSION = 1;
+-				DEVELOPMENT_TEAM = Q3MLBX8LNJ;
++				DEVELOPMENT_TEAM = 5AGMV642WQ;
+ 				ENABLE_HARDENED_RUNTIME = YES;
+ 				ENABLE_PREVIEWS = YES;
+ 				GENERATE_INFOPLIST_FILE = YES;
+@@ -292,7 +292,7 @@
+ 				CODE_SIGN_STYLE = Automatic;
+ 				COMBINE_HIDPI_IMAGES = YES;
+ 				CURRENT_PROJECT_VERSION = 1;
+-				DEVELOPMENT_TEAM = Q3MLBX8LNJ;
++				DEVELOPMENT_TEAM = 5AGMV642WQ;
+ 				ENABLE_HARDENED_RUNTIME = YES;
+ 				ENABLE_PREVIEWS = YES;
+ 				GENERATE_INFOPLIST_FILE = YES;
+diff --git a/MachineLearningChallenge/TestingView.swift b/MachineLearningChallenge/TestingView.swift
+index 7c168ac..49dba44 100644
+--- a/MachineLearningChallenge/TestingView.swift
++++ b/MachineLearningChallenge/TestingView.swift
+@@ -47,13 +47,11 @@ struct TestingView: View {
+     let onBack: () -> Void
+     // State untuk mengontrol apakah kartu terbuka atau tertutup
+     @State private var isCardOpen: Bool = false
+-    @State private var selectedWord: String?     // ← track user’s choice
++    @State private var selectedWord: String?     // ← track user's choice
+     @State private var showOverlay: Bool = false   // show big check
+     @State private var showCompletionModal = false
+     
+-    let pronouns = ["Kamu", "Dia", "Kita"]
+-
+-    
++    let pronouns = ["Aku", "Kamu", "Dia", "Mereka", "Kita", "Kami"]
+     
+     var videotips = videoTips()
+     var videopreviewtips = videoPreviewTips()
+@@ -77,15 +75,26 @@ struct TestingView: View {
+     // untuk menyimpan sekarang di kata yang mana melalui index array pronouns
+     @State private var currentIndex: Int = 0
+     
++    // Function untuk mendapatkan URL video berdasarkan kata
++    func getVideoURL(for word: String) -> URL? {
++        let videoName = word.lowercased()
++        return Bundle.main.url(forResource: videoName, withExtension: "mov")
++    }
++    
+     // function untuk update kata yang dipilih setelah pencet next/previous
+     func updateSelectedWord(to index: Int) {
+         let boundedIndex = min(max(index, 0), pronouns.count - 1)
+         currentIndex = boundedIndex
+         selectedWord = pronouns[boundedIndex]
+     }
+-
+-
+     
++    // Function untuk update index berdasarkan kata yang dipilih
++    func updateCurrentIndex(for word: String) {
++        if let index = pronouns.firstIndex(of: word) {
++            currentIndex = index
++        }
++    }
++
+     var body: some View {
+         ZStack {
+             // MARK: - Konten Utama Aplikasi
+@@ -122,10 +131,22 @@ struct TestingView: View {
+                                 
+                                 HStack (alignment: .center, spacing: 24){
+                                     ZStack {
+-                                        VideoContainerView(videoURL: Bundle.main.url(forResource: "mereka", withExtension: "mov")!)
+-                                            .clipShape(RoundedRectangle(cornerRadius: 8))
+-                                            .frame(width: geometry.size.width * 0.35, height: geometry.size.height * 0.9)
+-                                            .background(Color.red.opacity(0.2))
++                                        // Video berubah berdasarkan selectedWord
++                                        if let selectedWord = selectedWord,
++                                           let videoURL = getVideoURL(for: selectedWord) {
++                                            VideoContainerView(videoURL: videoURL)
++                                                .id(selectedWord) // Force refresh when word changes
++                                                .clipShape(RoundedRectangle(cornerRadius: 8))
++                                                .frame(width: geometry.size.width * 0.35, height: geometry.size.height * 0.9)
++                                                .background(Color.red.opacity(0.2))
++                                        } else {
++                                            // Default video jika tidak ada yang dipilih
++                                            VideoContainerView(videoURL: Bundle.main.url(forResource: "aku", withExtension: "mov")!)
++                                                .id("aku") // Default ID
++                                                .clipShape(RoundedRectangle(cornerRadius: 8))
++                                                .frame(width: geometry.size.width * 0.35, height: geometry.size.height * 0.9)
++                                                .background(Color.red.opacity(0.2))
++                                        }
+ 
+                                         VStack {
+                                             HStack(spacing: 16) {
+@@ -140,7 +161,6 @@ struct TestingView: View {
+                                                 .disabled(currentIndex == 0)
+                                                 .buttonStyle(PlainButtonStyle())
+ 
+-
+                                                 Text(pronouns[currentIndex])
+                                                     .frame(width: 100)
+                                                     .font(.title)
+@@ -149,7 +169,6 @@ struct TestingView: View {
+                                                     .padding(.vertical, 6)
+                                                     .background(Color.black.opacity(0.5))
+                                                     .clipShape(Capsule())
+-                                                    
+ 
+                                                 Button(action: {
+                                                     updateSelectedWord(to: currentIndex + 1)
+@@ -161,9 +180,7 @@ struct TestingView: View {
+                                                 }
+                                                 .disabled(currentIndex == pronouns.count - 1)
+                                                 .buttonStyle(PlainButtonStyle())
+-
+                                             }
+-//                                            .padding(.bottom, 20)
+                                             .frame(width: geometry.size.width * 0.35, height: 80, alignment: .center)
+                                             .background(Color.gray.opacity(0.5))
+                                             Spacer()
+@@ -173,9 +190,9 @@ struct TestingView: View {
+                                             .tipBackground(Color.black.opacity(0.6))
+                                             .fixedSize(horizontal: true, vertical: false)
+                                     }
+-
+                                     .clipShape(RoundedRectangle(cornerRadius: 8))
+                                     .frame(width: geometry.size.width * 0.35, height: geometry.size.height * 0.9)
++                                    
+                                     ZStack{
+                                         CameraPreview(session: camera.session)
+                                             .cornerRadius(8)
+@@ -186,7 +203,6 @@ struct TestingView: View {
+                                     }
+                                     .clipShape(RoundedRectangle(cornerRadius: 8))
+                                     .frame(width: geometry.size.width * 0.635, height: geometry.size.height * 0.75)
+-                                    
+                                 }
+                                 .frame(height: geometry.size.height)
+                                 .padding(.top, 35)
+@@ -209,7 +225,12 @@ struct TestingView: View {
+                     isCardOpen: $isCardOpen,
+                     selectedWord: $selectedWord,
+                     completedWords: completedWords,
+-                    pronouns: pronouns
++                    pronouns: pronouns,
++                    currentIndex: $currentIndex,
++                    onWordSelected: { word in
++                        // Update currentIndex ketika kata dipilih dari card
++                        updateCurrentIndex(for: word)
++                    }
+                 )
+                 .clipShape(UnevenRoundedRectangle(topLeadingRadius: 25, topTrailingRadius: 25))
+                 .frame(height: fullCardHeight)
+@@ -232,10 +253,12 @@ struct TestingView: View {
+                     .foregroundColor(.green)
+                     .transition(.scale.combined(with: .opacity))
+             }
+-            
+         }
+         .navigationBarBackButtonHidden(true)
+-        .onAppear { camera.start() }
++        .onAppear {
++            camera.start()
++            updateSelectedWord(to: 0)
++        }
+         //MARK: uncomment this on prod
+         .task {
+             // Configure and load your tips at app launch.
+@@ -312,17 +335,17 @@ struct TestingView: View {
+             .padding()
+             .frame(width: 400, height: 300)
+         }
+-
+     }
+ }
+ 
+ // MARK: - CardView (Tampilan Kartu Itu Sendiri)
+ struct CardView: View {
+     @Binding var isCardOpen: Bool
+-    @Binding var selectedWord: String?        // ← bound from parent
++    @Binding var selectedWord: String?
+     let completedWords: Set<String>
+-    
+-    let pronouns : [String]
++    let pronouns: [String]
++    @Binding var currentIndex: Int
++    let onWordSelected: (String) -> Void
+ 
+     var body: some View {
+         ZStack {
+@@ -335,10 +358,9 @@ struct CardView: View {
+                 HStack {
+                     Spacer()
+                     Text(isCardOpen ? "Tutup" : "Ingin Belajar Kata Ganti Lain? Pilih Disini!")
+-                    Image(systemName: "chevron.up") // Menggunakan ikon chevron ke atas
+-                        .font(.title2) // Ukuran ikon
++                    Image(systemName: "chevron.up")
++                        .font(.title2)
+                         .foregroundColor(.white.opacity(0.8))
+-                    //                        .padding(.bottom, isCardOpen ? 20 : 0)
+                         .rotationEffect(.degrees(isCardOpen ? 180 : 0))
+                         .animation(.interactiveSpring(response: 0.5, dampingFraction: 0.8, blendDuration: 0.2), value: isCardOpen)
+                     Spacer()
+@@ -349,7 +371,9 @@ struct CardView: View {
+                 .onTapGesture {
+                     isCardOpen.toggle()
+                 }
++                
+                 Spacer()
++                
+                 if isCardOpen {
+                     Text("Pilih Kata Ganti")
+                         .font(.headline)
+@@ -361,27 +385,32 @@ struct CardView: View {
+                             Button(action: {
+                                 // 1️⃣ record selection
+                                 selectedWord = word
++                                // 2️⃣ Update current index
++                                onWordSelected(word)
+                                 print("\(word) tapped")
+                                 isCardOpen.toggle()
+                             }) {
+-                                Text(word)
+-                                    .frame(maxWidth: .infinity, minHeight: 40)
+-                                    .background(Color.white.opacity(0.2))
+-                                    .foregroundColor(.white)
+-                                    .cornerRadius(8)
+-                                Spacer()
+-                                if completedWords.contains(word) {
+-                                    Image(systemName: "checkmark.circle.fill")
+-                                        .foregroundColor(.yellow)
+-                                }
+-                                
+-                                if selectedWord == word {
+-                                    Image(systemName: "hand.point.up.left.fill")
+-                                        .foregroundColor(.white.opacity(0.7))
++                                HStack {
++                                    Text(word)
++                                        .frame(maxWidth: .infinity, minHeight: 40)
++                                        .background(Color.white.opacity(0.2))
++                                        .foregroundColor(.white)
++                                        .cornerRadius(8)
++                                    
++                                    VStack {
++                                        if completedWords.contains(word) {
++                                            Image(systemName: "checkmark.circle.fill")
++                                                .foregroundColor(.yellow)
++                                        }
++                                        
++                                        if selectedWord == word {
++                                            Image(systemName: "hand.point.up.left.fill")
++                                                .foregroundColor(.white.opacity(0.7))
++                                        }
++                                    }
+                                 }
+                             }
+                             .buttonStyle(PlainButtonStyle())
+-                            
+                         }
+                     }
+                     .padding(.horizontal)
+@@ -396,14 +425,5 @@ struct CardView: View {
+             }
+         }
+         .frame(width: 1200)
+-        
+     }
+ }
+-
+-// MARK: - Preview untuk Xcode Canvas
+-//struct TestingView_Previews: PreviewProvider {
+-//    static var previews: some View {
+-//        TestingView()
+-//            .frame(width: 1500, height: 600)
+-//    }
+-//}
+diff --git a/MachineLearningChallenge/aku.mov b/MachineLearningChallenge/aku.mov
+deleted file mode 100644
+index 5415c86..0000000
+Binary files a/MachineLearningChallenge/aku.mov and /dev/null differ
+diff --git a/MachineLearningChallenge/mereka.mov b/MachineLearningChallenge/mereka.mov
+deleted file mode 100644
+index 150e82d..0000000
+Binary files a/MachineLearningChallenge/mereka.mov and /dev/null differ
+diff --git a/New Folder/MachineLearningChallenge/AppModel.swift b/New Folder/MachineLearningChallenge/AppModel.swift
+deleted file mode 100644
+index b580f60..0000000
+--- a/New Folder/MachineLearningChallenge/AppModel.swift	
++++ /dev/null
+@@ -1,23 +0,0 @@
+-//
+-//  AppModel.swift
+-//  MachineLearningChallenge
+-//
+-//  Created by Al Amin Dwiesta on 12/06/25.
+-//
+-
+-import SwiftUI
+-import AppKit
+-
+-class AppDelegate: NSObject, NSApplicationDelegate {
+-    func applicationDidFinishLaunching(_ notification: Notification) {
+-        // Optionally toggle as soon as the app finishes launching:
+-        toggleFullScreen()
+-    }
+-
+-    func toggleFullScreen() {
+-        // Grab the key/main window and toggle fullscreen
+-        if let window = NSApp.keyWindow ?? NSApp.windows.first {
+-            window.toggleFullScreen(nil)
+-        }
+-    }
+-}
+diff --git a/New Folder/MachineLearningChallenge/Assets.xcassets/AccentColor.colorset/Contents.json b/New Folder/MachineLearningChallenge/Assets.xcassets/AccentColor.colorset/Contents.json
+deleted file mode 100644
+index eb87897..0000000
+--- a/New Folder/MachineLearningChallenge/Assets.xcassets/AccentColor.colorset/Contents.json	
++++ /dev/null
+@@ -1,11 +0,0 @@
+-{
+-  "colors" : [
+-    {
+-      "idiom" : "universal"
+-    }
+-  ],
+-  "info" : {
+-    "author" : "xcode",
+-    "version" : 1
+-  }
+-}
+diff --git a/New Folder/MachineLearningChallenge/Assets.xcassets/AppIcon.appiconset/Contents.json b/New Folder/MachineLearningChallenge/Assets.xcassets/AppIcon.appiconset/Contents.json
+deleted file mode 100644
+index 3f00db4..0000000
+--- a/New Folder/MachineLearningChallenge/Assets.xcassets/AppIcon.appiconset/Contents.json	
++++ /dev/null
+@@ -1,58 +0,0 @@
+-{
+-  "images" : [
+-    {
+-      "idiom" : "mac",
+-      "scale" : "1x",
+-      "size" : "16x16"
+-    },
+-    {
+-      "idiom" : "mac",
+-      "scale" : "2x",
+-      "size" : "16x16"
+-    },
+-    {
+-      "idiom" : "mac",
+-      "scale" : "1x",
+-      "size" : "32x32"
+-    },
+-    {
+-      "idiom" : "mac",
+-      "scale" : "2x",
+-      "size" : "32x32"
+-    },
+-    {
+-      "idiom" : "mac",
+-      "scale" : "1x",
+-      "size" : "128x128"
+-    },
+-    {
+-      "idiom" : "mac",
+-      "scale" : "2x",
+-      "size" : "128x128"
+-    },
+-    {
+-      "idiom" : "mac",
+-      "scale" : "1x",
+-      "size" : "256x256"
+-    },
+-    {
+-      "idiom" : "mac",
+-      "scale" : "2x",
+-      "size" : "256x256"
+-    },
+-    {
+-      "idiom" : "mac",
+-      "scale" : "1x",
+-      "size" : "512x512"
+-    },
+-    {
+-      "idiom" : "mac",
+-      "scale" : "2x",
+-      "size" : "512x512"
+-    }
+-  ],
+-  "info" : {
+-    "author" : "xcode",
+-    "version" : 1
+-  }
+-}
+diff --git a/New Folder/MachineLearningChallenge/Assets.xcassets/Contents.json b/New Folder/MachineLearningChallenge/Assets.xcassets/Contents.json
+deleted file mode 100644
+index 73c0059..0000000
+--- a/New Folder/MachineLearningChallenge/Assets.xcassets/Contents.json	
++++ /dev/null
+@@ -1,6 +0,0 @@
+-{
+-  "info" : {
+-    "author" : "xcode",
+-    "version" : 1
+-  }
+-}
+diff --git a/New Folder/MachineLearningChallenge/Assets.xcassets/LEVELSELECT_BG.imageset/Contents.json b/New Folder/MachineLearningChallenge/Assets.xcassets/LEVELSELECT_BG.imageset/Contents.json
+deleted file mode 100644
+index fbb4a6c..0000000
+--- a/New Folder/MachineLearningChallenge/Assets.xcassets/LEVELSELECT_BG.imageset/Contents.json	
++++ /dev/null
+@@ -1,21 +0,0 @@
+-{
+-  "images" : [
+-    {
+-      "filename" : "LEVELSELECT_BG.png",
+-      "idiom" : "universal",
+-      "scale" : "1x"
+-    },
+-    {
+-      "idiom" : "universal",
+-      "scale" : "2x"
+-    },
+-    {
+-      "idiom" : "universal",
+-      "scale" : "3x"
+-    }
+-  ],
+-  "info" : {
+-    "author" : "xcode",
+-    "version" : 1
+-  }
+-}
+diff --git a/New Folder/MachineLearningChallenge/Assets.xcassets/LEVELSELECT_BG.imageset/LEVELSELECT_BG.png b/New Folder/MachineLearningChallenge/Assets.xcassets/LEVELSELECT_BG.imageset/LEVELSELECT_BG.png
+deleted file mode 100644
+index 4aeddd5..0000000
+Binary files a/New Folder/MachineLearningChallenge/Assets.xcassets/LEVELSELECT_BG.imageset/LEVELSELECT_BG.png and /dev/null differ
+diff --git a/New Folder/MachineLearningChallenge/Assets.xcassets/Mereka_Lindan_Fast_Backlight_1.dataset/Contents.json b/New Folder/MachineLearningChallenge/Assets.xcassets/Mereka_Lindan_Fast_Backlight_1.dataset/Contents.json
+deleted file mode 100644
+index 88e3d13..0000000
+--- a/New Folder/MachineLearningChallenge/Assets.xcassets/Mereka_Lindan_Fast_Backlight_1.dataset/Contents.json	
++++ /dev/null
+@@ -1,12 +0,0 @@
+-{
+-  "data" : [
+-    {
+-      "filename" : "Mereka_Lindan_Fast_Backlight_1.mov",
+-      "idiom" : "universal"
+-    }
+-  ],
+-  "info" : {
+-    "author" : "xcode",
+-    "version" : 1
+-  }
+-}
+diff --git a/New Folder/MachineLearningChallenge/Assets.xcassets/Mereka_Lindan_Fast_Backlight_1.dataset/Mereka_Lindan_Fast_Backlight_1.mov b/New Folder/MachineLearningChallenge/Assets.xcassets/Mereka_Lindan_Fast_Backlight_1.dataset/Mereka_Lindan_Fast_Backlight_1.mov
+deleted file mode 100644
+index 150e82d..0000000
+Binary files a/New Folder/MachineLearningChallenge/Assets.xcassets/Mereka_Lindan_Fast_Backlight_1.dataset/Mereka_Lindan_Fast_Backlight_1.mov and /dev/null differ
+diff --git a/New Folder/MachineLearningChallenge/Camera/CameraModel.swift b/New Folder/MachineLearningChallenge/Camera/CameraModel.swift
+deleted file mode 100644
+index dfda889..0000000
+--- a/New Folder/MachineLearningChallenge/Camera/CameraModel.swift	
++++ /dev/null
+@@ -1,164 +0,0 @@
+-//
+-//  CameraModel.swift
+-//  MachineLearningChallenge
+-//
+-//  Created by Al Amin Dwiesta on 12/06/25.
+-//
+-
+-import SwiftUI
+-import AVFoundation
+-import Vision
+-import CoreML
+-
+-/// Bridges an AVCaptureVideoPreviewLayer into SwiftUI on macOS
+-struct CameraPreview: NSViewRepresentable {
+-    let session: AVCaptureSession
+-
+-    func makeNSView(context: Context) -> NSView {
+-        let view = NSView(frame: .zero)
+-        view.wantsLayer = true
+-        
+-        // attach the video preview
+-        let previewLayer = AVCaptureVideoPreviewLayer(session: session)
+-        previewLayer.videoGravity = .resizeAspectFill
+-        previewLayer.setAffineTransform(CGAffineTransform(scaleX: -1, y: 1))
+-        previewLayer.frame = view.bounds
+-        previewLayer.autoresizingMask = [.layerWidthSizable, .layerHeightSizable]
+-        view.layer?.addSublayer(previewLayer)
+-        
+-        return view
+-    }
+-
+-    func updateNSView(_ nsView: NSView, context: Context) {
+-        guard let previewLayer = nsView.layer?.sublayers?.first as? AVCaptureVideoPreviewLayer else {
+-            return
+-        }
+-        previewLayer.frame = nsView.bounds
+-    }
+-}
+-
+-final class CameraModel: NSObject, ObservableObject {
+-    // MARK: – public
+-    @Published var lastPrediction = "…"
+-    let session = AVCaptureSession()
+-    
+-    // MARK: – private
+-    private let classifier: SIBIClassifier
+-    private var poseBuffer = [[Float]]()   // each frame: 21 joints × 3 floats
+-    private let jointNames: [VNHumanHandPoseObservation.JointName] = [
+-      .wrist,
+-      .thumbCMC, .thumbMP, .thumbIP, .thumbTip,
+-      .indexMCP, .indexPIP, .indexDIP, .indexTip,
+-      .middleMCP, .middlePIP, .middleDIP, .middleTip,
+-      .ringMCP, .ringPIP, .ringDIP, .ringTip,
+-      .littleMCP, .littlePIP, .littleDIP, .littleTip
+-    ]
+-    
+-    override init() {
+-        // 1) instantiate your compiled model
+-        guard let m = try? SIBIClassifier() else {
+-            fatalError("Failed to load SIBIClassifier.mlmodel")
+-        }
+-        classifier = m
+-        
+-        super.init()
+-        setupSession()
+-    }
+-    
+-    func start() {
+-        session.startRunning()
+-    }
+-    
+-    private func setupSession() {
+-        session.sessionPreset = .high
+-        guard
+-          let cam = AVCaptureDevice.default(for: .video),
+-          let input = try? AVCaptureDeviceInput(device: cam),
+-          session.canAddInput(input)
+-        else { fatalError("Cannot access camera") }
+-        session.addInput(input)
+-
+-        let out = AVCaptureVideoDataOutput()
+-        out.setSampleBufferDelegate(self, queue: .global(qos: .userInitiated))
+-        guard session.canAddOutput(out) else { fatalError("Cannot add output") }
+-        session.addOutput(out)
+-    }
+-    
+-    private func classifyIfReady() {
+-        guard poseBuffer.count == 90 else { return }   // wait until buffer is full
+-        
+-        // build the MLMultiArray [90, 3, 21]
+-        guard let arr = try? MLMultiArray(shape: [90,3,21], dataType: .float32) else {
+-            return
+-        }
+-        
+-        for t in 0..<90 {
+-            let frame = poseBuffer[t]        // 63 floats
+-            for j in 0..<21 {
+-                let base = j*3
+-                arr[[t, 0, j] as [NSNumber]] = frame[base + 0] as NSNumber
+-                arr[[t, 1, j] as [NSNumber]] = frame[base + 1] as NSNumber
+-                arr[[t, 2, j] as [NSNumber]] = frame[base + 2] as NSNumber
+-            }
+-        }
+-        
+-        // run your model
+-        let input  = SIBIClassifierInput(poses: arr)
+-        guard let out = try? classifier.prediction(input: input) else { return }
+-        
+-        DispatchQueue.main.async {
+-            self.lastPrediction = out.label   // or use out.labelProbabilities
+-        }
+-    }
+-}
+-
+-extension CameraModel: AVCaptureVideoDataOutputSampleBufferDelegate {
+-    func captureOutput(_ output: AVCaptureOutput,
+-                       didOutput sampleBuffer: CMSampleBuffer,
+-                       from connection: AVCaptureConnection) {
+-        guard let buf = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
+-        let handler = VNImageRequestHandler(cvPixelBuffer: buf, options: [:])
+-        let req = VNDetectHumanHandPoseRequest()
+-        req.maximumHandCount = 1
+-        
+-        do {
+-            try handler.perform([req])
+-            guard let obs = req.results?.first else {
+-                // no hand → pad a zero‐frame
+-                poseBuffer.append([Float](repeating: 0, count: 21*3))
+-                breakBufferIfNeeded()
+-                return
+-            }
+-            
+-            let points = try obs.recognizedPoints(.all)
+-            var frameArray = [Float]()
+-            frameArray.reserveCapacity(21*3)
+-            
+-            for name in jointNames {
+-                if let p = points[name] {
+-                    frameArray += [Float(p.location.x),
+-                                   Float(p.location.y),
+-                                   Float(p.confidence)]
+-                } else {
+-                    frameArray += [0,0,0]
+-                }
+-            }
+-            
+-            poseBuffer.append(frameArray)
+-            breakBufferIfNeeded()
+-            
+-        } catch {
+-            // if pose detection fails, pad zeros
+-            poseBuffer.append([Float](repeating: 0, count: 21*3))
+-            breakBufferIfNeeded()
+-        }
+-        
+-        classifyIfReady()
+-    }
+-    
+-    private func breakBufferIfNeeded() {
+-        if poseBuffer.count > 90 {
+-            poseBuffer.removeFirst(poseBuffer.count - 90)
+-        }
+-    }
+-}
+diff --git a/New Folder/MachineLearningChallenge/ContentView.swift b/New Folder/MachineLearningChallenge/ContentView.swift
+deleted file mode 100644
+index cf25594..0000000
+--- a/New Folder/MachineLearningChallenge/ContentView.swift	
++++ /dev/null
+@@ -1,26 +0,0 @@
+-import SwiftUI
+-import AppKit       // for NSView
+-import AVFoundation // for AVCaptureSession
+-
+-struct ContentView: View {
+-    @StateObject private var camera = CameraModel()
+-
+-    var body: some View {
+-        VStack {
+-            // 1) The live preview
+-            CameraPreview(session: camera.session)
+-                .frame(width: 640, height: 480)
+-                .cornerRadius(8)
+-                .shadow(radius: 4)
+-            
+-            // 2) The last predicted label
+-            Text(camera.lastPrediction)
+-                .font(.title)
+-                .padding(.top, 8)
+-        }
+-        .padding()
+-        .onAppear { camera.start() }
+-    }
+-}
+-
+-
+diff --git a/New Folder/MachineLearningChallenge/Info.plist b/New Folder/MachineLearningChallenge/Info.plist
+deleted file mode 100644
+index 7dcaefc..0000000
+--- a/New Folder/MachineLearningChallenge/Info.plist	
++++ /dev/null
+@@ -1,8 +0,0 @@
+-<?xml version="1.0" encoding="UTF-8"?>
+-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+-<plist version="1.0">
+-<dict>
+-	<key>NSCameraUsageDescription</key>
+-	<string>akses camera</string>
+-</dict>
+-</plist>
+diff --git a/New Folder/MachineLearningChallenge/LearningPageView.swift b/New Folder/MachineLearningChallenge/LearningPageView.swift
+deleted file mode 100644
+index 2f1edac..0000000
+--- a/New Folder/MachineLearningChallenge/LearningPageView.swift	
++++ /dev/null
+@@ -1,62 +0,0 @@
+-//
+-//  LearningPageView.swift
+-//  MachineLearningChallenge
+-//
+-//  Created by Lin Dan Christiano on 13/06/25.
+-//
+-
+-import Foundation
+-import SwiftUI
+-
+-struct LearningPageView: View {
+-    var body: some View {
+-        ZStack{
+-            VStack {
+-                GeometryReader {
+-                    geometry in
+-                    HStack {
+-                        Image(systemName: "chevron.left")
+-                            .frame(width: 32, height: 48)
+-                            .fontWeight(.bold)
+-                        Text("Pronoun")
+-                            .font(.system(size: 22, weight: .bold))
+-                    }
+-                    .frame(width: geometry.size.width, alignment: .leading)
+-                    //                .padding(8)
+-                    .background(Color.gray)
+-                    .clipShape(RoundedRectangle(cornerRadius: 8))
+-                    .padding(.top)
+-                    
+-                    HStack (alignment: .bottom){
+-                        ZStack{
+-                            Color.red
+-//                            Text("Kaka")
+-                        }
+-                        .frame(width: geometry.size.width * 0.35, height: geometry.size.height * 0.9)
+-                        ZStack{
+-                            VStack {
+-                                Color.blue
+-                            }
+-                            
+-                        }
+-                        .frame(width: geometry.size.width * 0.64, height: geometry.size.height * 0.90)
+-                        
+-                    }
+-                    .frame(height: geometry.size.height)
+-    //                .background(Color.cyan)
+-                    .padding(.top, 25)
+-                }
+-            }
+-            .padding(8)
+-            ZStack {
+-                Color.gray
+-                    .frame(width: 600, height: 50)
+-            }
+-        }
+-        
+-    }
+-}
+-
+-//#Preview {
+-//    LearningPageView()
+-//}
+diff --git a/New Folder/MachineLearningChallenge/MachineLearningChallenge.entitlements b/New Folder/MachineLearningChallenge/MachineLearningChallenge.entitlements
+deleted file mode 100644
+index f6ea603..0000000
+--- a/New Folder/MachineLearningChallenge/MachineLearningChallenge.entitlements	
++++ /dev/null
+@@ -1,12 +0,0 @@
+-<?xml version="1.0" encoding="UTF-8"?>
+-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+-<plist version="1.0">
+-<dict>
+-	<key>com.apple.security.app-sandbox</key>
+-	<true/>
+-	<key>com.apple.security.device.camera</key>
+-	<true/>
+-	<key>com.apple.security.files.user-selected.read-only</key>
+-	<true/>
+-</dict>
+-</plist>
+diff --git a/New Folder/MachineLearningChallenge/MachineLearningChallengeApp.swift b/New Folder/MachineLearningChallenge/MachineLearningChallengeApp.swift
+deleted file mode 100644
+index 1d844a7..0000000
+--- a/New Folder/MachineLearningChallenge/MachineLearningChallengeApp.swift	
++++ /dev/null
+@@ -1,35 +0,0 @@
+-//
+-//  MachineLearningChallengeApp.swift
+-//  MachineLearningChallenge
+-//
+-//  Created by Al Amin Dwiesta on 11/06/25.
+-//
+-
+-import SwiftUI
+-import TipKit
+-
+-@main
+-struct MachineLearningChallengeApp: App {
+-    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+-    //MARK: GATAU CARA APUS APPSTORAGE/APPNYA COMMENT/Uncomment ini buat hapus appstorage for now
+-    private let shouldWipeAppStorage = true
+-
+-    init() {
+-        #if DEBUG
+-        if shouldWipeAppStorage {
+-            let bundleID = Bundle.main.bundleIdentifier!
+-            UserDefaults.standard.removePersistentDomain(forName: bundleID)
+-            UserDefaults.standard.synchronize()
+-            print("🔨 AppStorage wiped for \(bundleID)")
+-        }
+-        try? Tips.resetDatastore()
+-        #endif
+-    }
+-    var body: some Scene {
+-        WindowGroup {
+-            MainView()
+-//            ContentView()
+-                .frame(minWidth: 800, minHeight: 600)
+-        }
+-    }
+-}
+diff --git a/New Folder/MachineLearningChallenge/Main/MainModel.swift b/New Folder/MachineLearningChallenge/Main/MainModel.swift
+deleted file mode 100644
+index 97819c6..0000000
+--- a/New Folder/MachineLearningChallenge/Main/MainModel.swift	
++++ /dev/null
+@@ -1,35 +0,0 @@
+-//
+-//  MainModel.swift
+-//  MachineLearningChallenge
+-//
+-//  Created by Al Amin Dwiesta on 13/06/25.
+-//
+-
+-import Foundation
+-
+-// MARK: - Model
+-
+-struct Level: Identifiable {
+-    let id: Int
+-    let title: String
+-    let content: String
+-}
+-
+-let levels: [Level] = [
+-    .init(id: 1,
+-          title: "Kata Ganti",
+-          content:
+-                  """
+-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor \
+-                  incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud \
+-                  exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute \
+-                  irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla \
+-                  pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia \
+-                  deserunt mollit anim id est laborum.
+-                  """
+-         ),
+-    .init(id: 2, title: "Level 2 Title", content: "Detail content for level 2..."),
+-    .init(id: 3, title: "Level 3 Title", content: "Detail content for level 3..."),
+-    .init(id: 4, title: "Level 4 Title", content: "Detail content for level 4..."),
+-    .init(id: 5, title: "Level 5 Title", content: "Detail content for level 5...")
+-]
+diff --git a/New Folder/MachineLearningChallenge/Main/MainView.swift b/New Folder/MachineLearningChallenge/Main/MainView.swift
+deleted file mode 100644
+index 4c9dd51..0000000
+--- a/New Folder/MachineLearningChallenge/Main/MainView.swift	
++++ /dev/null
+@@ -1,115 +0,0 @@
+-//
+-//  MainView.swift
+-//  MachineLearningChallenge
+-//
+-//  Created by Al Amin Dwiesta on 12/06/25.
+-//
+-import SwiftUI
+-
+-struct MainView: View {
+-    @State private var selectedLevel: Int? = nil
+-    @State private var navigateToTesting: Bool = false
+-    
+-    var body: some View {
+-        NavigationStack {
+-            GeometryReader { geo in
+-                ScrollViewReader { proxy in
+-                    ScrollView(.vertical, showsIndicators: true) {
+-                        ZStack {
+-                            Image("LEVELSELECT_BG")
+-                                .resizable()
+-                                .scaledToFill()
+-                                .frame(width: geo.size.width,
+-                                       height: geo.size.height)
+-                            VStack() {
+-                                Spacer().frame(height: 72)
+-                                VStack(spacing: 150) {
+-                                    ForEach(levels.reversed()) { level in
+-                                        RectangleLevelView(
+-                                            levelID: level.id,
+-                                            isSelected: level.id == selectedLevel
+-                                        )
+-                                        .id(level.id)
+-                                        .contentShape(Rectangle())
+-                                        .onTapGesture {
+-                                            withAnimation(.spring()) {
+-                                                selectedLevel = (selectedLevel == level.id ? nil : level.id)
+-                                            }
+-                                        }
+-                                        .popover(
+-                                            isPresented: Binding(
+-                                                get:  { selectedLevel == level.id },
+-                                                set: { if !$0 { selectedLevel = nil } }
+-                                            ),
+-                                            arrowEdge: .trailing
+-                                        ) {
+-                                            ModalView(level: level){
+-                                                navigateToTesting = true
+-                                            }
+-                                            .frame(
+-                                                minWidth: 300,
+-                                                idealWidth: 400,
+-                                                maxWidth: 600,
+-                                                minHeight: 200,
+-                                                idealHeight: 700,
+-                                                maxHeight: 1200
+-                                            )
+-                                            .padding()
+-                                        }
+-                                    }
+-                                }
+-                            }
+-                            .padding()
+-                        }
+-                        .padding(.vertical, 110)
+-                        .frame(minHeight: geo.size.height + 220)
+-                    }
+-                    .onAppear {
+-                        // scroll to Level 1 at launch:
+-                        if let firstID = levels.first?.id {
+-                            proxy.scrollTo(firstID, anchor: .bottom)
+-                        }
+-                    }
+-                }
+-                .navigationDestination(isPresented: $navigateToTesting) {
+-                    TestingView(onBack: { navigateToTesting = false })
+-                }
+-            }
+-        }
+-    }
+-}
+-
+-struct ModalView: View {
+-    let level: Level
+-    let onStartLearning: () -> Void
+-    
+-    var body: some View {
+-        VStack(alignment: .leading, spacing: 16) {
+-            Text(level.title)
+-                .font(.title).bold()
+-            
+-            ScrollView {
+-                Text(level.content)
+-                    .fixedSize(horizontal: false, vertical: true)
+-            }
+-            
+-            Spacer()
+-            
+-            Button("Mulai Belajar") {
+-                onStartLearning()
+-            }
+-            .buttonStyle(PrimaryButtonStyle())
+-            
+-            Button("Ulangi Boss Battle") { /*…*/ }
+-                .buttonStyle(SecondaryButtonStyle())
+-        }
+-    }
+-}
+-
+-// MARK: - Preview
+-
+-struct ContentView_Previews: PreviewProvider {
+-    static var previews: some View {
+-        MainView()
+-    }
+-}
+diff --git a/New Folder/MachineLearningChallenge/SIBIClassifier.mlmodel b/New Folder/MachineLearningChallenge/SIBIClassifier.mlmodel
+deleted file mode 100644
+index ff55b83..0000000
+Binary files a/New Folder/MachineLearningChallenge/SIBIClassifier.mlmodel and /dev/null differ
+diff --git a/New Folder/MachineLearningChallenge/TestingView.swift b/New Folder/MachineLearningChallenge/TestingView.swift
+deleted file mode 100644
+index 7c168ac..0000000
+--- a/New Folder/MachineLearningChallenge/TestingView.swift	
++++ /dev/null
+@@ -1,409 +0,0 @@
+-import SwiftUI
+-import AppKit       // for NSView
+-import AVFoundation // for AVCaptureSession
+-import TipKit
+-import AVKit
+-
+-struct videoTips: Tip {
+-    var title: Text  {
+-        Text("Watch Tutorial First")
+-    }
+-    var message: Text? {
+-        Text("by watching this video first, you can grasp how to do the sign language")
+-    }
+-    var image: Image? {
+-        Image(systemName: "star")
+-    }
+-}
+-
+-struct selectWordsTips: Tip {
+-    var title: Text  {
+-        Text("Click Here to change Words")
+-    }
+-    var message: Text? {
+-        Text("Click Here to change Words")
+-    }
+-    var image: Image? {
+-        Image(systemName: "star")
+-    }
+-}
+-
+-struct videoPreviewTips: Tip {
+-    var title: Text  {
+-        Text("Peragakan ulang")
+-    }
+-    var message: Text? {
+-        Text("peragakan ulang")
+-    }
+-    var image: Image? {
+-        Image(systemName: "star")
+-    }
+-}
+-
+-struct TestingView: View {
+-    
+-    @State private var player = AVPlayer()
+-    @StateObject private var camera = CameraModel()
+-    let onBack: () -> Void
+-    // State untuk mengontrol apakah kartu terbuka atau tertutup
+-    @State private var isCardOpen: Bool = false
+-    @State private var selectedWord: String?     // ← track user’s choice
+-    @State private var showOverlay: Bool = false   // show big check
+-    @State private var showCompletionModal = false
+-    
+-    let pronouns = ["Kamu", "Dia", "Kita"]
+-
+-    
+-    
+-    var videotips = videoTips()
+-    var videopreviewtips = videoPreviewTips()
+-    var selectwordstips = selectWordsTips()
+-    
+-    @AppStorage("completedPronounsRaw") private var completedPronounsRaw: String = ""
+-    private var completedWords: Set<String> {
+-        get { Set(completedPronounsRaw
+-            .split(separator: ",")
+-            .map { String($0) }
+-            .filter { !$0.isEmpty }) }
+-        set { completedPronounsRaw = newValue.sorted().joined(separator: ",") }
+-    }
+-    
+-    // Tinggi penuh kartu saat terbuka
+-    let fullCardHeight: CGFloat = 250
+-    
+-    // Seberapa banyak kartu yang terlihat saat tertutup (di bagian bawah layar)
+-    let peekHeight: CGFloat = 40
+-    
+-    // untuk menyimpan sekarang di kata yang mana melalui index array pronouns
+-    @State private var currentIndex: Int = 0
+-    
+-    // function untuk update kata yang dipilih setelah pencet next/previous
+-    func updateSelectedWord(to index: Int) {
+-        let boundedIndex = min(max(index, 0), pronouns.count - 1)
+-        currentIndex = boundedIndex
+-        selectedWord = pronouns[boundedIndex]
+-    }
+-
+-
+-    
+-    var body: some View {
+-        ZStack {
+-            // MARK: - Konten Utama Aplikasi
+-            Color.gray.opacity(0.1)
+-                .ignoresSafeArea()
+-                .overlay(
+-                    ZStack{
+-                        VStack {
+-                            GeometryReader {
+-                                geometry in
+-                                HStack {
+-                                    Button(action: {
+-                                        onBack()
+-                                    }) {
+-                                        HStack {
+-                                            Image(systemName: "chevron.left")
+-                                                .frame(width: 32, height: 48)
+-                                                .fontWeight(.bold)
+-                                            Text("Pilih Level")
+-                                                .font(.system(size: 20, weight: .semibold))
+-                                        }
+-                                        .padding(.trailing)
+-                                    }
+-                                    Spacer()
+-                                    Text(camera.lastPrediction)
+-                                        .font(.system(size: 24, weight: .bold))
+-                                        .padding(.trailing, 112)
+-                                    Spacer()
+-                                }
+-                                .frame(width: geometry.size.width, alignment: .leading)
+-                                .background(Color.gray)
+-                                .clipShape(RoundedRectangle(cornerRadius: 8))
+-                                .padding(.top)
+-                                
+-                                HStack (alignment: .center, spacing: 24){
+-                                    ZStack {
+-                                        VideoContainerView(videoURL: Bundle.main.url(forResource: "mereka", withExtension: "mov")!)
+-                                            .clipShape(RoundedRectangle(cornerRadius: 8))
+-                                            .frame(width: geometry.size.width * 0.35, height: geometry.size.height * 0.9)
+-                                            .background(Color.red.opacity(0.2))
+-
+-                                        VStack {
+-                                            HStack(spacing: 16) {
+-                                                Button(action: {
+-                                                    updateSelectedWord(to: currentIndex - 1)
+-                                                }) {
+-                                                    Image(systemName: "chevron.left.circle.fill")
+-                                                        .resizable()
+-                                                        .frame(width: 48, height: 48)
+-                                                        .foregroundColor(currentIndex > 0 ? .white : .gray)
+-                                                }
+-                                                .disabled(currentIndex == 0)
+-                                                .buttonStyle(PlainButtonStyle())
+-
+-
+-                                                Text(pronouns[currentIndex])
+-                                                    .frame(width: 100)
+-                                                    .font(.title)
+-                                                    .foregroundColor(.white)
+-                                                    .padding(.horizontal, 12)
+-                                                    .padding(.vertical, 6)
+-                                                    .background(Color.black.opacity(0.5))
+-                                                    .clipShape(Capsule())
+-                                                    
+-
+-                                                Button(action: {
+-                                                    updateSelectedWord(to: currentIndex + 1)
+-                                                }) {
+-                                                    Image(systemName: "chevron.right.circle.fill")
+-                                                        .resizable()
+-                                                        .frame(width: 48, height: 48)
+-                                                        .foregroundColor(currentIndex < pronouns.count - 1 ? .white : .gray)
+-                                                }
+-                                                .disabled(currentIndex == pronouns.count - 1)
+-                                                .buttonStyle(PlainButtonStyle())
+-
+-                                            }
+-//                                            .padding(.bottom, 20)
+-                                            .frame(width: geometry.size.width * 0.35, height: 80, alignment: .center)
+-                                            .background(Color.gray.opacity(0.5))
+-                                            Spacer()
+-                                        }
+-
+-                                        TipView(videotips, arrowEdge: .top)
+-                                            .tipBackground(Color.black.opacity(0.6))
+-                                            .fixedSize(horizontal: true, vertical: false)
+-                                    }
+-
+-                                    .clipShape(RoundedRectangle(cornerRadius: 8))
+-                                    .frame(width: geometry.size.width * 0.35, height: geometry.size.height * 0.9)
+-                                    ZStack{
+-                                        CameraPreview(session: camera.session)
+-                                            .cornerRadius(8)
+-                                            .shadow(radius: 4)
+-                                        TipView(videopreviewtips, arrowEdge: .top)
+-                                            .tipBackground(Color.black.opacity(0.6))
+-                                            .fixedSize(horizontal: true, vertical: false)
+-                                    }
+-                                    .clipShape(RoundedRectangle(cornerRadius: 8))
+-                                    .frame(width: geometry.size.width * 0.635, height: geometry.size.height * 0.75)
+-                                    
+-                                }
+-                                .frame(height: geometry.size.height)
+-                                .padding(.top, 35)
+-                            }
+-                        }
+-                        .padding(8)
+-                    }
+-                )
+-                .onTapGesture {
+-                    if isCardOpen{
+-                        isCardOpen.toggle()
+-                    }
+-                }
+-            
+-            // MARK: - Komponen Pembuka Kartu
+-            VStack {
+-                Spacer()
+-                ZStack{
+-                CardView(
+-                    isCardOpen: $isCardOpen,
+-                    selectedWord: $selectedWord,
+-                    completedWords: completedWords,
+-                    pronouns: pronouns
+-                )
+-                .clipShape(UnevenRoundedRectangle(topLeadingRadius: 25, topTrailingRadius: 25))
+-                .frame(height: fullCardHeight)
+-                .offset(y: isCardOpen ? 0 : fullCardHeight - peekHeight)
+-                .animation(.interactiveSpring(response: 0.5, dampingFraction: 0.8, blendDuration: 0.2), value: isCardOpen)
+-                    TipView(selectwordstips,arrowEdge: .bottom)
+-                        .padding(.bottom,-50)
+-                        .tipBackground(Color.black.opacity(0.6))
+-                        .fixedSize(horizontal: true, vertical: false)
+-                }
+-            }
+-            .ignoresSafeArea(.all, edges: .bottom)
+-            
+-            //MARK: Overlay cek bener apa engga
+-            if showOverlay {
+-                Color.black.opacity(0.4).ignoresSafeArea()
+-                Image(systemName: "checkmark.circle.fill")
+-                    .resizable()
+-                    .frame(width: 150, height: 150)
+-                    .foregroundColor(.green)
+-                    .transition(.scale.combined(with: .opacity))
+-            }
+-            
+-        }
+-        .navigationBarBackButtonHidden(true)
+-        .onAppear { camera.start() }
+-        //MARK: uncomment this on prod
+-        .task {
+-            // Configure and load your tips at app launch.
+-            do {
+-                try Tips.configure()
+-            }
+-            catch {
+-                // Handle TipKit errors
+-                print("Error initializing TipKit \(error.localizedDescription)")
+-            }
+-        }
+-        .onChange(of: camera.lastPrediction) { newPrediction in
+-            guard let picked = selectedWord,
+-                  picked == newPrediction
+-            else { return }
+-
+-            // ✅ Update completedWords jika belum ada
+-            var updated = completedWords
+-            if !updated.contains(picked) {
+-                updated.insert(picked)
+-                completedPronounsRaw = updated.sorted().joined(separator: ",")
+-            }
+-
+-            // ✅ Tampilkan overlay (checkmark hijau)
+-            withAnimation {
+-                showOverlay = true
+-            }
+-            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+-                withAnimation {
+-                    showOverlay = false
+-                }
+-            }
+-
+-            // ✅ Cek apakah semua pronouns sudah selesai
+-            let allPronouns = pronouns
+-            if allPronouns.allSatisfy({ updated.contains($0) }) {
+-                showCompletionModal = true
+-            }
+-        }
+-
+-        .sheet(isPresented: $showCompletionModal) {
+-            VStack(spacing: 20) {
+-                Text("🎉 Kamu sudah membuka Training Ground!")
+-                    .font(.title)
+-                    .multilineTextAlignment(.center)
+-                    .padding()
+-
+-                Text("Ingin mencoba skill-mu?")
+-                    .font(.headline)
+-
+-                HStack(spacing: 20) {
+-                    Button("Let's Go") {
+-                        // Navigasi ke halaman berikutnya
+-                        print("User chose to go!")
+-                        showCompletionModal = false
+-                    }
+-                    .padding()
+-                    .frame(maxWidth: .infinity)
+-                    .background(Color.blue)
+-                    .foregroundColor(.white)
+-                    .cornerRadius(10)
+-
+-                    Button("Do it Later") {
+-                        showCompletionModal = false
+-                    }
+-                    .padding()
+-                    .frame(maxWidth: .infinity)
+-                    .background(Color.gray.opacity(0.3))
+-                    .foregroundColor(.primary)
+-                    .cornerRadius(10)
+-                }
+-                .padding(.horizontal)
+-            }
+-            .padding()
+-            .frame(width: 400, height: 300)
+-        }
+-
+-    }
+-}
+-
+-// MARK: - CardView (Tampilan Kartu Itu Sendiri)
+-struct CardView: View {
+-    @Binding var isCardOpen: Bool
+-    @Binding var selectedWord: String?        // ← bound from parent
+-    let completedWords: Set<String>
+-    
+-    let pronouns : [String]
+-
+-    var body: some View {
+-        ZStack {
+-            UnevenRoundedRectangle(topLeadingRadius: 25, topTrailingRadius: 25)
+-                .fill(LinearGradient(gradient: Gradient(colors: [Color.blue.opacity(0.8), Color.blue]), startPoint: .top, endPoint: .bottom))
+-                .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: -5)
+-            
+-            VStack {
+-                // MARK: Chevron untuk Animasi
+-                HStack {
+-                    Spacer()
+-                    Text(isCardOpen ? "Tutup" : "Ingin Belajar Kata Ganti Lain? Pilih Disini!")
+-                    Image(systemName: "chevron.up") // Menggunakan ikon chevron ke atas
+-                        .font(.title2) // Ukuran ikon
+-                        .foregroundColor(.white.opacity(0.8))
+-                    //                        .padding(.bottom, isCardOpen ? 20 : 0)
+-                        .rotationEffect(.degrees(isCardOpen ? 180 : 0))
+-                        .animation(.interactiveSpring(response: 0.5, dampingFraction: 0.8, blendDuration: 0.2), value: isCardOpen)
+-                    Spacer()
+-                }
+-                .frame(width: .infinity)
+-                .padding(.vertical, 16)
+-                .background(LinearGradient(gradient: Gradient(colors: [Color.blue.opacity(0.4), Color.blue]), startPoint: .top, endPoint: .bottom))
+-                .onTapGesture {
+-                    isCardOpen.toggle()
+-                }
+-                Spacer()
+-                if isCardOpen {
+-                    Text("Pilih Kata Ganti")
+-                        .font(.headline)
+-                        .foregroundColor(.white)
+-                        .padding(.bottom, 8)
+-                    
+-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 3), spacing: 10) {
+-                        ForEach(pronouns, id: \.self) { word in
+-                            Button(action: {
+-                                // 1️⃣ record selection
+-                                selectedWord = word
+-                                print("\(word) tapped")
+-                                isCardOpen.toggle()
+-                            }) {
+-                                Text(word)
+-                                    .frame(maxWidth: .infinity, minHeight: 40)
+-                                    .background(Color.white.opacity(0.2))
+-                                    .foregroundColor(.white)
+-                                    .cornerRadius(8)
+-                                Spacer()
+-                                if completedWords.contains(word) {
+-                                    Image(systemName: "checkmark.circle.fill")
+-                                        .foregroundColor(.yellow)
+-                                }
+-                                
+-                                if selectedWord == word {
+-                                    Image(systemName: "hand.point.up.left.fill")
+-                                        .foregroundColor(.white.opacity(0.7))
+-                                }
+-                            }
+-                            .buttonStyle(PlainButtonStyle())
+-                            
+-                        }
+-                    }
+-                    .padding(.horizontal)
+-                    .padding(.bottom, 50)
+-                } else {
+-                    Spacer()
+-                    Text("Tekan Chevron untuk Membuka")
+-                        .font(.subheadline)
+-                        .foregroundColor(.white.opacity(0.9))
+-                        .padding(.bottom, 20)
+-                }
+-            }
+-        }
+-        .frame(width: 1200)
+-        
+-    }
+-}
+-
+-// MARK: - Preview untuk Xcode Canvas
+-//struct TestingView_Previews: PreviewProvider {
+-//    static var previews: some View {
+-//        TestingView()
+-//            .frame(width: 1500, height: 600)
+-//    }
+-//}
+diff --git a/New Folder/MachineLearningChallenge/aku.mov b/New Folder/MachineLearningChallenge/aku.mov
+deleted file mode 100644
+index 5415c86..0000000
+Binary files a/New Folder/MachineLearningChallenge/aku.mov and /dev/null differ
+diff --git a/New Folder/MachineLearningChallenge/mereka.mov b/New Folder/MachineLearningChallenge/mereka.mov
+deleted file mode 100644
+index 150e82d..0000000
+Binary files a/New Folder/MachineLearningChallenge/mereka.mov and /dev/null differ

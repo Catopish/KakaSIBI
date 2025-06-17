@@ -47,16 +47,16 @@ struct TestingView: View {
     let onBack: () -> Void
     // State untuk mengontrol apakah kartu terbuka atau tertutup
     @State private var isCardOpen: Bool = false
-    @State private var selectedWord: String?     // ← track user’s choice
+    @State private var selectedWord: String?     // ← track user's choice
     @State private var showOverlay: Bool = false   // show big check
     @State private var showCompletionModal = false
+    let pronouns = ["Aku", "Kamu", "Dia", "Mereka", "Kita", "Kami"]
     @State private var showHelpModal = false
     
     var videotips = videoTips()
     var videopreviewtips = videoPreviewTips()
     var selectwordstips = selectWordsTips()
     
-    let pronouns = ["Kamu", "Dia", "Kita"]
     
     @AppStorage("completedPronounsRaw") private var completedPronounsRaw: String = ""
     private var completedWords: Set<String> {
@@ -72,6 +72,29 @@ struct TestingView: View {
     // Seberapa banyak kartu yang terlihat saat tertutup (di bagian bawah layar)
     let peekHeight: CGFloat = 40
     
+    // untuk menyimpan sekarang di kata yang mana melalui index array pronouns
+    @State private var currentIndex: Int = 0
+    
+    // Function untuk mendapatkan URL video berdasarkan kata
+    func getVideoURL(for word: String) -> URL? {
+        let videoName = word.lowercased()
+        return Bundle.main.url(forResource: videoName, withExtension: "mov")
+    }
+    
+    // function untuk update kata yang dipilih setelah pencet next/previous
+    func updateSelectedWord(to index: Int) {
+        let boundedIndex = min(max(index, 0), pronouns.count - 1)
+        currentIndex = boundedIndex
+        selectedWord = pronouns[boundedIndex]
+    }
+    
+    // Function untuk update index berdasarkan kata yang dipilih
+    func updateCurrentIndex(for word: String) {
+        if let index = pronouns.firstIndex(of: word) {
+            currentIndex = index
+        }
+    }
+
     var body: some View {
         ZStack {
             // MARK: - Konten Utama Aplikasi
@@ -115,17 +138,69 @@ struct TestingView: View {
                                 .padding(.top)
                                 
                                 HStack (alignment: .center, spacing: 24){
-                                    ZStack{
-                                        VideoContainerView(videoURL: Bundle.main.url(forResource: "Mereka_Lindan_Fast_Backlight_1", withExtension: "mov")!)
-                                            .clipShape(RoundedRectangle(cornerRadius: 8))
-                                            .frame(width: geometry.size.width * 0.35, height: geometry.size.height * 0.9)
-                                            .background(Color.red.opacity(0.2))
+                                    ZStack {
+                                        // Video berubah berdasarkan selectedWord
+                                        if let selectedWord = selectedWord,
+                                           let videoURL = getVideoURL(for: selectedWord) {
+                                            VideoContainerView(videoURL: videoURL)
+                                                .id(selectedWord) // Force refresh when word changes
+                                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                                                .frame(width: geometry.size.width * 0.35, height: geometry.size.height * 0.9)
+                                                .background(Color.red.opacity(0.2))
+                                        } else {
+                                            // Default video jika tidak ada yang dipilih
+                                            VideoContainerView(videoURL: Bundle.main.url(forResource: "aku", withExtension: "mov")!)
+                                                .id("aku") // Default ID
+                                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                                                .frame(width: geometry.size.width * 0.35, height: geometry.size.height * 0.9)
+                                                .background(Color.red.opacity(0.2))
+                                        }
+
+                                        VStack {
+                                            HStack(spacing: 16) {
+                                                Button(action: {
+                                                    updateSelectedWord(to: currentIndex - 1)
+                                                }) {
+                                                    Image(systemName: "chevron.left.circle.fill")
+                                                        .resizable()
+                                                        .frame(width: 48, height: 48)
+                                                        .foregroundColor(currentIndex > 0 ? .white : .gray)
+                                                }
+                                                .disabled(currentIndex == 0)
+                                                .buttonStyle(PlainButtonStyle())
+
+                                                Text(pronouns[currentIndex])
+                                                    .frame(width: 100)
+                                                    .font(.title)
+                                                    .foregroundColor(.white)
+                                                    .padding(.horizontal, 12)
+                                                    .padding(.vertical, 6)
+                                                    .background(Color.black.opacity(0.5))
+                                                    .clipShape(Capsule())
+
+                                                Button(action: {
+                                                    updateSelectedWord(to: currentIndex + 1)
+                                                }) {
+                                                    Image(systemName: "chevron.right.circle.fill")
+                                                        .resizable()
+                                                        .frame(width: 48, height: 48)
+                                                        .foregroundColor(currentIndex < pronouns.count - 1 ? .white : .gray)
+                                                }
+                                                .disabled(currentIndex == pronouns.count - 1)
+                                                .buttonStyle(PlainButtonStyle())
+                                            }
+                                            .frame(width: geometry.size.width * 0.35, height: 80, alignment: .center)
+                                            .background(Color.gray.opacity(0.5))
+                                            Spacer()
+                                        }
+
                                         TipView(videotips, arrowEdge: .top)
                                             .tipBackground(Color.black.opacity(0.6))
                                             .fixedSize(horizontal: true, vertical: false)
                                     }
                                     .clipShape(RoundedRectangle(cornerRadius: 8))
                                     .frame(width: geometry.size.width * 0.35, height: geometry.size.height * 0.9)
+                                    
                                     ZStack{
                                         CameraPreview(session: camera.session)
                                             .cornerRadius(8)
@@ -136,7 +211,6 @@ struct TestingView: View {
                                     }
                                     .clipShape(RoundedRectangle(cornerRadius: 8))
                                     .frame(width: geometry.size.width * 0.635, height: geometry.size.height * 0.75)
-                                    
                                 }
                                 .frame(height: geometry.size.height)
                                 .padding(.top, 35)
@@ -155,16 +229,21 @@ struct TestingView: View {
             VStack {
                 Spacer()
                 ZStack{
-                    CardView(
-                        isCardOpen: $isCardOpen,
-                        selectedWord: $selectedWord,
-                        completedWords: completedWords,
-                        pronouns: pronouns
-                    )
-                    .clipShape(UnevenRoundedRectangle(topLeadingRadius: 25, topTrailingRadius: 25))
-                    .frame(height: fullCardHeight)
-                    .offset(y: isCardOpen ? 0 : fullCardHeight - peekHeight)
-                    .animation(.interactiveSpring(response: 0.5, dampingFraction: 0.8, blendDuration: 0.2), value: isCardOpen)
+                CardView(
+                    isCardOpen: $isCardOpen,
+                    selectedWord: $selectedWord,
+                    completedWords: completedWords,
+                    pronouns: pronouns,
+                    currentIndex: $currentIndex,
+                    onWordSelected: { word in
+                        // Update currentIndex ketika kata dipilih dari card
+                        updateCurrentIndex(for: word)
+                    }
+                )
+                .clipShape(UnevenRoundedRectangle(topLeadingRadius: 25, topTrailingRadius: 25))
+                .frame(height: fullCardHeight)
+                .offset(y: isCardOpen ? 0 : fullCardHeight - peekHeight)
+                .animation(.interactiveSpring(response: 0.5, dampingFraction: 0.8, blendDuration: 0.2), value: isCardOpen)
                     TipView(selectwordstips,arrowEdge: .bottom)
                         .padding(.bottom,-50)
                         .tipBackground(Color.black.opacity(0.6))
@@ -186,10 +265,12 @@ struct TestingView: View {
                 Color.black.opacity(0.4).ignoresSafeArea()
                 HelpModalView(showHelpModal: $showHelpModal)
             }
-            
         }
         .navigationBarBackButtonHidden(true)
-        .onAppear { camera.start() }
+        .onAppear {
+            camera.start()
+            updateSelectedWord(to: 0)
+        }
         //MARK: uncomment this on prod
         .task {
             // Configure and load your tips at app launch.
@@ -266,18 +347,17 @@ struct TestingView: View {
             .padding()
             .frame(width: 400, height: 300)
         }
-        
     }
 }
 
 // MARK: - CardView (Tampilan Kartu Itu Sendiri)
 struct CardView: View {
     @Binding var isCardOpen: Bool
-    @Binding var selectedWord: String?        // ← bound from parent
+    @Binding var selectedWord: String?
     let completedWords: Set<String>
-    
-    let pronouns : [String]
-    
+    let pronouns: [String]
+    @Binding var currentIndex: Int
+    let onWordSelected: (String) -> Void
     var body: some View {
         ZStack {
             UnevenRoundedRectangle(topLeadingRadius: 25, topTrailingRadius: 25)
@@ -289,10 +369,9 @@ struct CardView: View {
                 HStack {
                     Spacer()
                     Text(isCardOpen ? "Tutup" : "Ingin Belajar Kata Ganti Lain? Pilih Disini!")
-                    Image(systemName: "chevron.up") // Menggunakan ikon chevron ke atas
-                        .font(.title2) // Ukuran ikon
+                    Image(systemName: "chevron.up")
+                        .font(.title2)
                         .foregroundColor(.white.opacity(0.8))
-                    //                        .padding(.bottom, isCardOpen ? 20 : 0)
                         .rotationEffect(.degrees(isCardOpen ? 180 : 0))
                         .animation(.interactiveSpring(response: 0.5, dampingFraction: 0.8, blendDuration: 0.2), value: isCardOpen)
                     Spacer()
@@ -303,7 +382,9 @@ struct CardView: View {
                 .onTapGesture {
                     isCardOpen.toggle()
                 }
+                
                 Spacer()
+                
                 if isCardOpen {
                     Text("Pilih Kata Ganti")
                         .font(.headline)
@@ -315,6 +396,8 @@ struct CardView: View {
                             Button(action: {
                                 // 1️⃣ record selection
                                 selectedWord = word
+                                // 2️⃣ Update current index
+                                onWordSelected(word)
                                 print("\(word) tapped")
                                 isCardOpen.toggle()
                             }) {
@@ -328,7 +411,6 @@ struct CardView: View {
                                 }
                             }
                             .buttonStyle(PlainButtonStyle())
-                            
                         }
                     }
                     .padding(.horizontal)
@@ -343,10 +425,8 @@ struct CardView: View {
             }
         }
         .frame(width: 1200)
-        
     }
 }
-
 
 struct HelpModalView: View {
     @Binding var showHelpModal: Bool

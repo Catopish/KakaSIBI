@@ -16,7 +16,7 @@
 			path = Components;
 			sourceTree = "<group>";
 		};
-		61E07BBA2DF9131D00377115 /* MachineLearningChallenge */ = {
+		A52181772E010E3500303D0F /* MachineLearningChallenge */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = MachineLearningChallenge;
 			sourceTree = "<group>";
@@ -37,7 +37,7 @@
 		61E07BAF2DF9131D00377115 = {
 			isa = PBXGroup;
 			children = (
-				61E07BBA2DF9131D00377115 /* MachineLearningChallenge */,
+				A52181772E010E3500303D0F /* MachineLearningChallenge */,
 				61E07BB92DF9131D00377115 /* Products */,
 				6135968B2DFBAC12004A55C4 /* Components */,
 			);
@@ -68,7 +68,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				6135968B2DFBAC12004A55C4 /* Components */,
-				61E07BBA2DF9131D00377115 /* MachineLearningChallenge */,
+				A52181772E010E3500303D0F /* MachineLearningChallenge */,
 			);
 			name = MachineLearningChallenge;
 			packageProductDependencies = (
@@ -262,7 +262,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = Q3MLBX8LNJ;
+				DEVELOPMENT_TEAM = 5AGMV642WQ;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -292,7 +292,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = Q3MLBX8LNJ;
+				DEVELOPMENT_TEAM = 5AGMV642WQ;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
