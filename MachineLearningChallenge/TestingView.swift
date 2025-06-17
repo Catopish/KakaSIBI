@@ -2,6 +2,43 @@ import SwiftUI
 import AppKit       // for NSView
 import AVFoundation // for AVCaptureSession
 import AVKit
+import TipKit
+
+struct videoTips: Tip {
+    var title: Text  {
+        Text("Watch Tutorial First")
+    }
+    var message: Text? {
+        Text("by watching this video first, you can grasp how to do the sign language")
+    }
+    var image: Image? {
+        Image(systemName: "star")
+    }
+}
+
+struct selectWordsTips: Tip {
+    var title: Text  {
+        Text("Click Here to change Words")
+    }
+    var message: Text? {
+        Text("Click Here to change Words")
+    }
+    var image: Image? {
+        Image(systemName: "star")
+    }
+}
+
+struct videoPreviewTips: Tip {
+    var title: Text  {
+        Text("Peragakan ulang")
+    }
+    var message: Text? {
+        Text("peragakan ulang")
+    }
+    var image: Image? {
+        Image(systemName: "star")
+    }
+}
 
 struct TestingView: View {
     
@@ -16,6 +53,11 @@ struct TestingView: View {
     
     let pronouns = ["Kamu", "Dia", "Kita"]
 
+    
+    
+    var videotips = videoTips()
+    var videopreviewtips = videoPreviewTips()
+    var selectwordstips = selectWordsTips()
     
     @AppStorage("completedPronounsRaw") private var completedPronounsRaw: String = ""
     private var completedWords: Set<String> {
@@ -75,15 +117,22 @@ struct TestingView: View {
                                             .clipShape(RoundedRectangle(cornerRadius: 8))
                                             .frame(width: geometry.size.width * 0.35, height: geometry.size.height * 0.9)
                                             .background(Color.red.opacity(0.2))
-                            
-
+                                        TipView(videotips, arrowEdge: .top)
+                                            .tipBackground(Color.black.opacity(0.6))
+                                            .fixedSize(horizontal: true, vertical: false)
                                     }
+                                    
                                     .clipShape(RoundedRectangle(cornerRadius: 8))
                                     .frame(width: geometry.size.width * 0.35, height: geometry.size.height * 0.9)
                                     ZStack{
+                                        //                                        VStack {
                                         CameraPreview(session: camera.session)
+                                        //  .frame(width: 640, height: 480)
                                             .cornerRadius(8)
                                             .shadow(radius: 4)
+                                        TipView(videopreviewtips, arrowEdge: .top)
+                                            .tipBackground(Color.black.opacity(0.6))
+                                            .fixedSize(horizontal: true, vertical: false)
                                     }
                                     .clipShape(RoundedRectangle(cornerRadius: 8))
                                     .frame(width: geometry.size.width * 0.635, height: geometry.size.height * 0.75)
@@ -115,6 +164,11 @@ struct TestingView: View {
                 .frame(height: fullCardHeight)
                 .offset(y: isCardOpen ? 0 : fullCardHeight - peekHeight)
                 .animation(.interactiveSpring(response: 0.5, dampingFraction: 0.8, blendDuration: 0.2), value: isCardOpen)
+                    TipView(selectwordstips,arrowEdge: .bottom)
+                        .padding(.bottom,-50)
+                        .tipBackground(Color.black.opacity(0.6))
+                        .fixedSize(horizontal: true, vertical: false)
+                }
             }
             .ignoresSafeArea(.all, edges: .bottom)
             
@@ -131,6 +185,17 @@ struct TestingView: View {
         }
         .navigationBarBackButtonHidden(true)
         .onAppear { camera.start() }
+        //MARK: uncomment this on prod
+        .task {
+            // Configure and load your tips at app launch.
+            do {
+                try Tips.configure()
+            }
+            catch {
+                // Handle TipKit errors
+                print("Error initializing TipKit \(error.localizedDescription)")
+            }
+        }
         .onChange(of: camera.lastPrediction) { newPrediction in
             guard let picked = selectedWord,
                   picked == newPrediction

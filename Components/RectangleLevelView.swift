@@ -15,7 +15,7 @@ struct RectangleLevelView: View {
         ZStack {
             Rectangle()
                 .fill(isSelected ? Color.blue : Color.gray.opacity(0.2))
-                .frame(width: 395, height: 203)
+                .frame(width: 300, height: 200)
             Text("\(levelID)")
                 .font(.headline)
                 .foregroundColor(isSelected ? .white : .black)
