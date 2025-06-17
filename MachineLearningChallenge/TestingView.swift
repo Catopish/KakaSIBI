@@ -318,20 +318,13 @@ struct CardView: View {
                                 print("\(word) tapped")
                                 isCardOpen.toggle()
                             }) {
-                                Text(word)
-                                    .frame(maxWidth: .infinity, minHeight: 40)
-                                    .background(Color.white.opacity(0.2))
-                                    .foregroundColor(.white)
-                                    .cornerRadius(8)
-                                Spacer()
-                                if completedWords.contains(word) {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .foregroundColor(.yellow)
-                                }
-                                
-                                if selectedWord == word {
-                                    Image(systemName: "hand.point.up.left.fill")
-                                        .foregroundColor(.white.opacity(0.7))
+                                HStack{
+                                    Text(word)
+                                        .frame(maxWidth: .infinity, minHeight: 40)
+                                        .background(completedWords.contains(word) ? Color.green.opacity(0.5) : Color.white.opacity(0.2) )
+                                        .foregroundColor(.white)
+                                        .cornerRadius(8)
+                                    Spacer()
                                 }
                             }
                             .buttonStyle(PlainButtonStyle())
