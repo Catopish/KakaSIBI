@@ -27,7 +27,8 @@ struct MachineLearningChallengeApp: App {
     }
     var body: some Scene {
         WindowGroup {
-            GamePreview()
+            MainView()
+            //            GamePreview()
 //            ContentView()
                 .frame(minWidth: 800, minHeight: 600)
         }
