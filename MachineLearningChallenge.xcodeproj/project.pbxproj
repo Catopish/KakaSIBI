@@ -21,6 +21,11 @@
 			path = MachineLearningChallenge;
 			sourceTree = "<group>";
 		};
+		6A40AB7C2E00511E000543E2 /* Game */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Game;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -40,6 +45,7 @@
 				61E07BBA2DF9131D00377115 /* MachineLearningChallenge */,
 				61E07BB92DF9131D00377115 /* Products */,
 				6135968B2DFBAC12004A55C4 /* Components */,
+				6A40AB7C2E00511E000543E2 /* Game */,
 			);
 			sourceTree = "<group>";
 		};
@@ -69,6 +75,7 @@
 			fileSystemSynchronizedGroups = (
 				6135968B2DFBAC12004A55C4 /* Components */,
 				61E07BBA2DF9131D00377115 /* MachineLearningChallenge */,
+				6A40AB7C2E00511E000543E2 /* Game */,
 			);
 			name = MachineLearningChallenge;
 			packageProductDependencies = (
@@ -262,7 +269,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 5AGMV642WQ;
+				DEVELOPMENT_TEAM = DVBG245BYT;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
