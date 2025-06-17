@@ -13,6 +13,8 @@ struct TestingView: View {
     @State private var selectedWord: String?     // ← track user’s choice
     @State private var showOverlay: Bool = false   // show big check
     @State private var showCompletionModal = false
+    
+    let pronouns = ["Kamu", "Dia", "Kita"]
 
     
     @AppStorage("completedPronounsRaw") private var completedPronounsRaw: String = ""
@@ -106,7 +108,8 @@ struct TestingView: View {
                 CardView(
                     isCardOpen: $isCardOpen,
                     selectedWord: $selectedWord,
-                    completedWords: completedWords
+                    completedWords: completedWords,
+                    pronouns: pronouns
                 )
                 .clipShape(UnevenRoundedRectangle(topLeadingRadius: 25, topTrailingRadius: 25))
                 .frame(height: fullCardHeight)
@@ -151,7 +154,7 @@ struct TestingView: View {
             }
 
             // ✅ Cek apakah semua pronouns sudah selesai
-            let allPronouns = ["Kamu", "Dia", "Kita"]
+            let allPronouns = pronouns
             if allPronouns.allSatisfy({ updated.contains($0) }) {
                 showCompletionModal = true
             }
@@ -203,8 +206,8 @@ struct CardView: View {
     @Binding var selectedWord: String?        // ← bound from parent
     let completedWords: Set<String>
     
-    let pronouns = ["Kamu", "Dia", "Kita"]
-    
+    let pronouns : [String]
+
     var body: some View {
         ZStack {
             UnevenRoundedRectangle(topLeadingRadius: 25, topTrailingRadius: 25)
