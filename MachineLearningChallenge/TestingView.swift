@@ -93,7 +93,7 @@ struct TestingView: View {
             currentIndex = index
         }
     }
-
+    
     var body: some View {
         ZStack (alignment: .bottom){
             // MARK: - Konten Utama Aplikasi
@@ -186,93 +186,84 @@ struct TestingView: View {
             // MARK: - Komponen Pembuka Kartu
             ZStack{
                 Spacer()
-                    VStack {
-                        CardView(
-                            isCardOpen: $isCardOpen,
-                            selectedWord: $selectedWord,
-                            completedWords: completedWords,
-                            pronouns: pronouns,
-                            currentIndex: $currentIndex,
-                            onWordSelected: { word in
-                                // Update currentIndex ketika kata dipilih dari card
-                                updateCurrentIndex(for: word)
-                            }
-                        )
-                        .clipShape(UnevenRoundedRectangle(topLeadingRadius: 25, topTrailingRadius: 25))
-                        .frame(height: fullCardHeight)
-                        .offset(y: isCardOpen ? 0 : fullCardHeight - peekHeight)
-                        .animation(.interactiveSpring(response: 0.5, dampingFraction: 0.8, blendDuration: 0.2), value: isCardOpen)
-                        HStack(spacing: 80) {
-                            Button(action: {
-                                updateSelectedWord(to: currentIndex - 1)
-                            }) {
-                                Image(systemName: "chevron.left.circle.fill")
-                                    .resizable()
-                                    .frame(width: 48, height: 48)
-                                    .foregroundColor(currentIndex > 0 ? .blue : .white.opacity(0.5))
-                            }
-                            .disabled(currentIndex == 0)
-                            .buttonStyle(PlainButtonStyle())
-
-                            Button(action: {
-                                                isCardOpen.toggle()
-                                            }) {
-                                                Text(pronouns[currentIndex])
-                                                    
-                                                Image(systemName: "chevron.up")
-//                                                    .foregroundColor(Color.white)
-                                            }
-                                            .buttonStyle(PlainButtonStyle())
-                                            .frame(width: 200)
-                                            .font(.title)
-                                            .foregroundColor(.white)
-                                            .padding(.horizontal, 12)
-                                            .padding(.vertical, 6)
-                                            .background(Color.blue)
-                                            .clipShape(Capsule())
-//                                            .hoverEffect(.highlight) // Menambahkan efek hover
-//                                            .padding(.bottom, 20)
-
-                            Button(action: {
-                                updateSelectedWord(to: currentIndex + 1)
-                            }) {
-                                Image(systemName: "chevron.right.circle.fill")
-                                    .resizable()
-                                    .frame(width: 48, height: 48)
-                                    .foregroundColor(currentIndex < pronouns.count - 1 ? .blue : .white.opacity(0.5))
-                            }
-                            .disabled(currentIndex == pronouns.count - 1)
-                            .buttonStyle(PlainButtonStyle())
+                VStack {
+                    CardView(
+                        isCardOpen: $isCardOpen,
+                        selectedWord: $selectedWord,
+                        completedWords: completedWords,
+                        pronouns: pronouns,
+                        currentIndex: $currentIndex,
+                        onWordSelected: { word in
+                            // Update currentIndex ketika kata dipilih dari card
+                            updateCurrentIndex(for: word)
                         }
-                        .frame(width: 800, height: 100)
-                        .background(Color.gray)
+                    )
+                    .clipShape(UnevenRoundedRectangle(topLeadingRadius: 25, topTrailingRadius: 25))
+                    .frame(height: fullCardHeight)
+                    .offset(y: isCardOpen ? 0 : fullCardHeight - peekHeight)
+                    .animation(.interactiveSpring(response: 0.5, dampingFraction: 0.8, blendDuration: 0.2), value: isCardOpen)
+                    HStack(spacing: 80) {
+                        Button(action: {
+                            updateSelectedWord(to: currentIndex - 1)
+                        }) {
+                            Image(systemName: "chevron.left.circle.fill")
+                                .resizable()
+                                .frame(width: 48, height: 48)
+                                .foregroundColor(currentIndex > 0 ? .blue : .white.opacity(0.5))
+                        }
+                        .disabled(currentIndex == 0)
+                        .buttonStyle(PlainButtonStyle())
                         
-                        TipView(selectwordstips,arrowEdge: .bottom)
-                            .padding(.bottom,-100)
-                            .tipBackground(Color.black.opacity(0.6))
-                            .fixedSize(horizontal: true, vertical: false)
+                        Button(action: {
+                            isCardOpen.toggle()
+                        }) {
+                            Text(pronouns[currentIndex])
+                            
+                            Image(systemName: "chevron.up")
+                            //                                                    .foregroundColor(Color.white)
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                        .frame(width: 200)
+                        .font(.title)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(Color.blue)
+                        .clipShape(Capsule())
+                        //                                            .hoverEffect(.highlight) // Menambahkan efek hover
+                        //                                            .padding(.bottom, 20)
+                        
+                        Button(action: {
+                            updateSelectedWord(to: currentIndex + 1)
+                        }) {
+                            Image(systemName: "chevron.right.circle.fill")
+                                .resizable()
+                                .frame(width: 48, height: 48)
+                                .foregroundColor(currentIndex < pronouns.count - 1 ? .blue : .white.opacity(0.5))
+                        }
+                        .disabled(currentIndex == pronouns.count - 1)
+                        .buttonStyle(PlainButtonStyle())
                     }
-                    .ignoresSafeArea(.all, edges: .bottom)
-//                    .frame(maxHeight: .infinity)
-                //MARK: Overlay cek bener apa engga
-                if showOverlay {
-                    Color.black.opacity(0.4).ignoresSafeArea()
-                    Image(systemName: "checkmark.circle.fill")
-                        .resizable()
-                        .frame(width: 150, height: 150)
-                        .foregroundColor(.green)
-                        .transition(.scale.combined(with: .opacity))
+                    .frame(width: 800, height: 100)
+                    .background(Color.gray)
+                    
+                    TipView(selectwordstips,arrowEdge: .bottom)
+                        .padding(.bottom,-100)
+                        .tipBackground(Color.black.opacity(0.6))
+                        .fixedSize(horizontal: true, vertical: false)
                 }
-                if showHelpModal {
-                    Color.black.opacity(0.4).ignoresSafeArea()
-                    HelpModalView(showHelpModal: $showHelpModal)
-                }
-
-                }
-//            .frame(maxHeight: .infinity, alignment: .bottom)
+                .ignoresSafeArea(.all, edges: .bottom)
+                //                    .frame(maxHeight: .infinity)
+                
+            }
+            //            .frame(maxHeight: .infinity, alignment: .bottom)
             
             
-                    }
+            
+        }
+        //        ZStack{
+        
+        //        }
         .navigationBarBackButtonHidden(true)
         .onAppear {
             camera.start()
@@ -353,6 +344,26 @@ struct TestingView: View {
             }
             .padding()
             .frame(width: 400, height: 300)
+        }
+        //MARK: Overlay cek bener apa engga
+        ZStack {
+            if showOverlay {
+                Color.black.opacity(0.4).ignoresSafeArea()
+                Image(systemName: "checkmark.circle.fill")
+                    .resizable()
+                    .frame(width: 150, height: 150)
+                    .foregroundColor(.green)
+                    .transition(.opacity)
+            }
+        }
+        .animation(.easeInOut(duration: 0.3), value: showOverlay)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        if showHelpModal {
+            ZStack{
+                Color.black.opacity(0.4).ignoresSafeArea()
+                HelpModalView(showHelpModal: $showHelpModal)
+            }
+            
         }
     }
 }
