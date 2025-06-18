@@ -109,7 +109,16 @@ final class CameraModel: NSObject, ObservableObject {
         DispatchQueue.main.async {
             self.lastPrediction = out.label   // or use out.labelProbabilities
         }
+        
+        if out.labelProbabilities[out.label] ?? 0 > 0.8 {  // tweak threshold if needed
+            DispatchQueue.main.async {
+                if self.lastPrediction != out.label {
+                    self.lastPrediction = out.label
+                }
+            }
+        }
     }
+    
 }
 
 extension CameraModel: AVCaptureVideoDataOutputSampleBufferDelegate {
