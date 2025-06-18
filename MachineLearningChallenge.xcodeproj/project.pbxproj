@@ -16,6 +16,11 @@
 			path = Components;
 			sourceTree = "<group>";
 		};
+		6A40AB7C2E00511E000543E2 /* Game */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Game;
+			sourceTree = "<group>";
+		};
 		A52181772E010E3500303D0F /* MachineLearningChallenge */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = MachineLearningChallenge;
@@ -40,6 +45,7 @@
 				A52181772E010E3500303D0F /* MachineLearningChallenge */,
 				61E07BB92DF9131D00377115 /* Products */,
 				6135968B2DFBAC12004A55C4 /* Components */,
+				6A40AB7C2E00511E000543E2 /* Game */,
 			);
 			sourceTree = "<group>";
 		};
@@ -68,6 +74,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				6135968B2DFBAC12004A55C4 /* Components */,
+				6A40AB7C2E00511E000543E2 /* Game */,
 				A52181772E010E3500303D0F /* MachineLearningChallenge */,
 			);
 			name = MachineLearningChallenge;
