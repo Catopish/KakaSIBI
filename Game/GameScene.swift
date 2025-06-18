@@ -7,40 +7,54 @@
 
 import SpriteKit
 
+enum GameState {
+    case playing
+    case gameOver
+    case won
+}
+
+
 class GameScene: SKScene {
     private var player: SKSpriteNode!
     private var cameraModel: CameraModel?
     private var road1: SKSpriteNode!
     private var road2: SKSpriteNode!
+    private var lives: Int = 3
+    private var heartNodes: [SKSpriteNode] = []
+    private var gameState: GameState = .playing
+    private var points: Int = 0
 
+    
+    
+    
     private let enemyLabels = ["Aku", "Kamu", "Dia", "Kita", "Mereka", "Kami"]
-
+    
     init(size: CGSize, cameraModel: CameraModel) {
         self.cameraModel = cameraModel
         super.init(size: size)
     }
-
+    
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
     }
-
+    
     override func didMove(to view: SKView) {
         backgroundColor = .clear
         anchorPoint = CGPoint(x: 0.5, y: 0.5)
         
         // Initialize road
-        let roadHeight: CGFloat = size.height / 5
+        let roadHeight: CGFloat = size.height / 10
         let roadSize = CGSize(width: size.width, height: roadHeight)
         let roadY = -size.height / 2 + roadHeight / 2
-
+        
         road1 = SKSpriteNode(color: .gray, size: roadSize)
         road1.position = CGPoint(x: 0, y: roadY)
         addChild(road1)
-
+        
         road2 = SKSpriteNode(color: .gray, size: roadSize)
         road2.position = CGPoint(x: road1.position.x + road1.size.width, y: roadY)
         addChild(road2)
-
+        
         // Initialize player
         player = SKSpriteNode(imageNamed: "NewSpaceship")
         player.size = CGSize(width: 100, height: 100)
@@ -48,17 +62,31 @@ class GameScene: SKScene {
         let playerX = -size.width / 2 + player.size.width
         player.position = CGPoint(x: playerX, y: playerY)
         addChild(player)
-
+        
+        showHearts()
+        
+        let scoreLabel = SKLabelNode(text: "Score: 0")
+            scoreLabel.name = "scoreLabel"
+            scoreLabel.fontSize = 30
+            scoreLabel.fontColor = .white
+            scoreLabel.position = CGPoint(x: 0, y: size.height / 2 - 40)
+            scoreLabel.zPosition = 999
+            addChild(scoreLabel)
+        
         observeHandSigns()
-
+    
         let spawnAction = SKAction.repeatForever(SKAction.sequence([
             SKAction.run { [weak self] in self?.spawnEnemy() },
             SKAction.wait(forDuration: 2.0)
         ]))
-        run(spawnAction)
+        
+        run(spawnAction, withKey: "spawnEnemies")
+        
     }
-
+    
     private func spawnEnemy() {
+        guard gameState == .playing else { return }
+
         guard let label = enemyLabels.randomElement() else { return }
 
         let enemy = SKSpriteNode(color: .red, size: CGSize(width: 80, height: 80))
@@ -76,7 +104,7 @@ class GameScene: SKScene {
         enemy.zPosition = 1
         addChild(enemy)
 
-        let move = SKAction.move(to: CGPoint(x: player.position.x, y: enemyY), duration: 4.0)
+        let move = SKAction.move(to: CGPoint(x: player.position.x, y: enemyY), duration: 8.0)
         let remove = SKAction.removeFromParent()
 
         let sequence = SKAction.sequence([move, remove])
@@ -86,28 +114,37 @@ class GameScene: SKScene {
         let checkCollision = SKAction.repeatForever(SKAction.sequence([
             SKAction.run { [weak self, weak enemy] in
                 guard let self = self, let enemy = enemy else { return }
-                if enemy.frame.intersects(self.player.frame) {
-                    self.gameOver()
+                if enemy.frame.intersects(self.player.frame),
+                   enemy.userData?["hasCollided"] as? Bool == false {
+                    enemy.userData?["hasCollided"] = true
+                    enemy.removeAllActions()
+                    enemy.removeFromParent()
+                    self.loseLife()
                 }
             },
             SKAction.wait(forDuration: 0.1)
         ]))
         enemy.run(checkCollision)
+
+        enemy.userData = NSMutableDictionary()
+        enemy.userData?["hasCollided"] = false
     }
 
+    
     private func gameOver() {
+        gameState = .gameOver
         removeAllActions()
-
-        // Stop all enemy actions
+        
         for child in children {
             if enemyLabels.contains(child.name ?? "") {
                 child.removeAllActions()
             }
         }
-
+        
         showGameOverOverlay()
     }
-
+    
+    
     private func showGameOverOverlay() {
         let overlay = SKShapeNode(rectOf: CGSize(width: size.width * 0.8, height: size.height * 0.4), cornerRadius: 20)
         overlay.fillColor = .black
@@ -116,20 +153,20 @@ class GameScene: SKScene {
         overlay.zPosition = 1000
         overlay.name = "gameOverOverlay"
         addChild(overlay)
-
+        
         let gameOverLabel = SKLabelNode(text: "Game Over")
         gameOverLabel.fontSize = 40
         gameOverLabel.fontColor = .white
         gameOverLabel.position = CGPoint(x: 0, y: 60)
         overlay.addChild(gameOverLabel)
-
+        
         let retryLabel = SKLabelNode(text: "Retry")
         retryLabel.name = "retry"
         retryLabel.fontSize = 30
         retryLabel.fontColor = .green
         retryLabel.position = CGPoint(x: 0, y: 10)
         overlay.addChild(retryLabel)
-
+        
         let menuLabel = SKLabelNode(text: "Main Menu")
         menuLabel.name = "mainMenu"
         menuLabel.fontSize = 30
@@ -137,10 +174,10 @@ class GameScene: SKScene {
         menuLabel.position = CGPoint(x: 0, y: -40)
         overlay.addChild(menuLabel)
     }
-
+    
     private func observeHandSigns() {
         guard let cameraModel = cameraModel else { return }
-
+        
         let checkAction = SKAction.repeatForever(
             SKAction.sequence([
                 SKAction.run { [weak self] in
@@ -149,10 +186,10 @@ class GameScene: SKScene {
                 SKAction.wait(forDuration: 0.3)
             ])
         )
-
+        
         run(checkAction)
     }
-
+    
     private func updateSpriteBasedOnPrediction(_ prediction: String) {
         switch prediction {
         case "Aku", "Dia", "Kita", "Mereka", "Kami":
@@ -160,10 +197,10 @@ class GameScene: SKScene {
         default:
             player.texture = SKTexture(imageNamed: "NewSpaceship")
         }
-
+        
         destroyEnemy(named: prediction)
     }
-
+    
     private func destroyEnemy(named name: String) {
         let matchingEnemies = children.filter { $0.name == name }
         guard let closest = matchingEnemies.min(by: {
@@ -173,12 +210,27 @@ class GameScene: SKScene {
         let fade = SKAction.fadeOut(withDuration: 0.3)
         let remove = SKAction.removeFromParent()
         closest.run(SKAction.sequence([fade, remove]))
+        
+        // 🟢 Increase points
+        points += 1
+        
+        // 🟢 Update the score label
+        if let scoreLabel = childNode(withName: "scoreLabel") as? SKLabelNode {
+            scoreLabel.text = "Score: \(points)"
+        }
+
+        // 🟢 Check if player wins
+        if points >= 15 {
+            endGameWithWin()
+        }
     }
 
+
+    
     override func mouseDown(with event: NSEvent) {
         let location = event.location(in: self)
         let nodesAtPoint = nodes(at: location)
-
+        
         for node in nodesAtPoint {
             if node.name == "retry" {
                 restartGame()
@@ -187,26 +239,89 @@ class GameScene: SKScene {
             }
         }
     }
-
-
+    
+    
     private func restartGame() {
         let newScene = GameScene(size: size, cameraModel: cameraModel!)
         newScene.scaleMode = scaleMode
         view?.presentScene(newScene, transition: .fade(withDuration: 1.0))
     }
-
+    
     private func goToMainMenu() {
         let menuScene = SKScene(size: size)
         menuScene.scaleMode = scaleMode
         menuScene.backgroundColor = .black
-
+        
         let label = SKLabelNode(text: "Main Menu")
         label.fontSize = 50
         label.fontColor = .white
         label.position = CGPoint(x: 0, y: 0)
         menuScene.addChild(label)
-
+        
         view?.presentScene(menuScene, transition: .fade(withDuration: 1.0))
     }
-}
+    
+    private func loseLife() {
+        lives = lives - 1
+        updateHeartsDisplay()
+        
+        if lives <= 0 {
+            gameOver()
+        }
+    }
+    
+    private func showHearts() {
+        for i in 0..<lives {
+            let heart = SKSpriteNode(imageNamed: "Heart") // 🖼 Make sure to add a heart image to Assets
+            heart.size = CGSize(width: 40, height: 40)
+            heart.position = CGPoint(x: -size.width / 2 + CGFloat(i) * 50 + 30, y: size.height / 2 - 50)
+            heart.zPosition = 999
+            heartNodes.append(heart)
+            addChild(heart)
+        }
+    }
+    
+    private func updateHeartsDisplay() {
+        for (index, heart) in heartNodes.enumerated() {
+            heart.isHidden = index >= lives
+        }
+    }
+    
+    private func endGameWithWin() {
+        gameState = .won
+        removeAction(forKey: "spawnEnemies")
+        removeAllActions()
+        
+        for child in children {
+            if enemyLabels.contains(child.name ?? "") {
+                child.removeAllActions()
+            }
+        }
+        
+        showVictoryOverlay()
+    }
 
+    
+    private func showVictoryOverlay() {
+        let overlay = SKShapeNode(rectOf: CGSize(width: size.width * 0.8, height: size.height * 0.4), cornerRadius: 20)
+        overlay.fillColor = .green
+        overlay.alpha = 0.8
+        overlay.position = CGPoint.zero
+        overlay.zPosition = 1000
+        overlay.name = "victoryOverlay"
+        addChild(overlay)
+        
+        let victoryLabel = SKLabelNode(text: "You Win!")
+        victoryLabel.fontSize = 40
+        victoryLabel.fontColor = .white
+        victoryLabel.position = CGPoint(x: 0, y: 60)
+        overlay.addChild(victoryLabel)
+        
+        let menuLabel = SKLabelNode(text: "Main Menu")
+        menuLabel.name = "mainMenu"
+        menuLabel.fontSize = 30
+        menuLabel.fontColor = .yellow
+        menuLabel.position = CGPoint(x: 0, y: -40)
+        overlay.addChild(menuLabel)
+    }
+}
