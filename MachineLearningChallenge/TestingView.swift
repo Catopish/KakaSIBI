@@ -9,7 +9,7 @@ struct videoTips: Tip {
         Text("Tonton tutorialnya dulu, ya!")
     }
     var message: Text? {
-        Text("Dengan nonton video ini dulu, kamu bakal lebih paham cara bikin gerakan bahasa isyarat.")
+        Text("Dengan nonton video ini dulu, kamu bakal lebih paham\ncara bikin gerakan bahasa isyarat.")
     }
     var image: Image? {
         Image(systemName: "1.circle")
@@ -57,7 +57,12 @@ struct TestingView: View {
     var videopreviewtips = videoPreviewTips()
     var selectwordstips = selectWordsTips()
     
-    
+    @State private var tips: TipGroup = TipGroup(.ordered) {
+      videoTips()
+      videoPreviewTips()
+      selectWordsTips()
+    }
+
     @AppStorage("completedPronounsRaw") private var completedPronounsRaw: String = ""
     private var completedWords: Set<String> {
         get { Set(completedPronounsRaw
@@ -68,9 +73,9 @@ struct TestingView: View {
     }
     
     // Tinggi penuh kartu saat terbuka
-    let fullCardHeight: CGFloat = 250
+    let fullCardHeight: CGFloat = 170
     // Seberapa banyak kartu yang terlihat saat tertutup (di bagian bawah layar)
-    let peekHeight: CGFloat = 40
+    let peekHeight: CGFloat = 0
     
     // untuk menyimpan sekarang di kata yang mana melalui index array pronouns
     @State private var currentIndex: Int = 0
@@ -94,9 +99,9 @@ struct TestingView: View {
             currentIndex = index
         }
     }
-
+    
     var body: some View {
-        ZStack {
+        ZStack (alignment: .bottom){
             // MARK: - Konten Utama Aplikasi
             Color.gray.opacity(0.1)
                 .ignoresSafeArea()
@@ -145,58 +150,23 @@ struct TestingView: View {
                                             VideoContainerView(videoURL: videoURL)
                                                 .id(selectedWord) // Force refresh when word changes
                                                 .clipShape(RoundedRectangle(cornerRadius: 8))
-                                                .frame(width: geometry.size.width * 0.35, height: geometry.size.height * 0.9)
-                                                .background(Color.red.opacity(0.2))
+                                                .frame(width: geometry.size.width * 0.35, height: geometry.size.height * 0.75)
                                         } else {
                                             // Default video jika tidak ada yang dipilih
                                             VideoContainerView(videoURL: Bundle.main.url(forResource: "aku", withExtension: "mov")!)
                                                 .id("aku") // Default ID
                                                 .clipShape(RoundedRectangle(cornerRadius: 8))
-                                                .frame(width: geometry.size.width * 0.35, height: geometry.size.height * 0.9)
-                                                .background(Color.red.opacity(0.2))
+                                                .frame(width: geometry.size.width * 0.35, height: geometry.size.height * 0.75)
                                         }
 
-                                        VStack {
-                                            HStack(spacing: 16) {
-                                                Button(action: {
-                                                    updateSelectedWord(to: currentIndex - 1)
-                                                }) {
-                                                    Image(systemName: "chevron.left.circle.fill")
-                                                        .resizable()
-                                                        .frame(width: 48, height: 48)
-                                                        .foregroundColor(currentIndex > 0 ? .white : .gray)
-                                                }
-                                                .disabled(currentIndex == 0)
-                                                .buttonStyle(PlainButtonStyle())
-
-                                                Text(pronouns[currentIndex])
-                                                    .frame(width: 100)
-                                                    .font(.title)
-                                                    .foregroundColor(.white)
-                                                    .padding(.horizontal, 12)
-                                                    .padding(.vertical, 6)
-                                                    .background(Color.black.opacity(0.5))
-                                                    .clipShape(Capsule())
-
-                                                Button(action: {
-                                                    updateSelectedWord(to: currentIndex + 1)
-                                                }) {
-                                                    Image(systemName: "chevron.right.circle.fill")
-                                                        .resizable()
-                                                        .frame(width: 48, height: 48)
-                                                        .foregroundColor(currentIndex < pronouns.count - 1 ? .white : .gray)
-                                                }
-                                                .disabled(currentIndex == pronouns.count - 1)
-                                                .buttonStyle(PlainButtonStyle())
-                                            }
-                                            .frame(width: geometry.size.width * 0.35, height: 80, alignment: .center)
-                                            .background(Color.gray.opacity(0.5))
-                                            Spacer()
+                                        if let tip = tips.currentTip as? videoTips {
+                                            TipView(videotips, arrowEdge: .top)
+                                                .zIndex(1)
+                                                .padding(.bottom,-300)
+                                                .tipBackground(Color.black)
+                                                .fixedSize(horizontal: true, vertical: false)
+                                                .padding(.leading,50)
                                         }
-
-                                        TipView(videotips, arrowEdge: .top)
-                                            .tipBackground(Color.black.opacity(0.6))
-                                            .fixedSize(horizontal: true, vertical: false)
                                     }
                                     .clipShape(RoundedRectangle(cornerRadius: 8))
                                     .frame(width: geometry.size.width * 0.35, height: geometry.size.height * 0.9)
@@ -205,9 +175,13 @@ struct TestingView: View {
                                         CameraPreview(session: camera.session)
                                             .cornerRadius(8)
                                             .shadow(radius: 4)
-                                        TipView(videopreviewtips, arrowEdge: .top)
-                                            .tipBackground(Color.black.opacity(0.6))
-                                            .fixedSize(horizontal: true, vertical: false)
+                                        if let tip = tips.currentTip as? videoPreviewTips {
+                                            TipView(videopreviewtips, arrowEdge: .top)
+                                                .zIndex(1)
+                                                .padding(.bottom,-300)
+                                                .tipBackground(Color.black)
+                                                .fixedSize(horizontal: true, vertical: false)
+                                        }
                                     }
                                     .clipShape(RoundedRectangle(cornerRadius: 8))
                                     .frame(width: geometry.size.width * 0.635, height: geometry.size.height * 0.75)
@@ -226,46 +200,93 @@ struct TestingView: View {
                 }
             
             // MARK: - Komponen Pembuka Kartu
-            VStack {
-                Spacer()
-                ZStack{
-                CardView(
-                    isCardOpen: $isCardOpen,
-                    selectedWord: $selectedWord,
-                    completedWords: completedWords,
-                    pronouns: pronouns,
-                    currentIndex: $currentIndex,
-                    onWordSelected: { word in
-                        // Update currentIndex ketika kata dipilih dari card
-                        updateCurrentIndex(for: word)
+            ZStack{
+//                Spacer()
+                VStack {
+                    
+                    CardView(
+                        isCardOpen: $isCardOpen,
+                        selectedWord: $selectedWord,
+                        completedWords: completedWords,
+                        pronouns: pronouns,
+                        currentIndex: $currentIndex,
+                        onWordSelected: { word in
+                            // Update currentIndex ketika kata dipilih dari card
+                            updateCurrentIndex(for: word)
+                        }
+                    )
+                    .clipShape(UnevenRoundedRectangle(topLeadingRadius: 25, topTrailingRadius: 25))
+                    .frame(height: fullCardHeight)
+                    .offset(y: isCardOpen ? 0 : fullCardHeight - peekHeight)
+                    .animation(.interactiveSpring(response: 0.5, dampingFraction: 0.8, blendDuration: 0.2), value: isCardOpen)
+                    HStack(spacing: 80) {
+                        Button(action: {
+                            updateSelectedWord(to: currentIndex - 1)
+                        }) {
+                            Image(systemName: "chevron.left.circle.fill")
+                                .resizable()
+                                .frame(width: 48, height: 48)
+                                .foregroundColor(currentIndex > 0 ? .blue : .white.opacity(0.5))
+                        }
+                        .disabled(currentIndex == 0)
+                        .buttonStyle(PlainButtonStyle())
+                        
+                        Button(action: {
+                            isCardOpen.toggle()
+                        }) {
+                            HStack{
+                                Text(pronouns[currentIndex])
+                                Image(systemName: "chevron.up")
+                            }
+                            .frame(width: 200)
+                            .font(.title)
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(Color.blue)
+                            .clipShape(Capsule())
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                        
+                        Button(action: {
+                            updateSelectedWord(to: currentIndex + 1)
+                        }) {
+                            Image(systemName: "chevron.right.circle.fill")
+                                .resizable()
+                                .frame(width: 48, height: 48)
+                                .foregroundColor(currentIndex < pronouns.count - 1 ? .blue : .white.opacity(0.5))
+                        }
+                        .disabled(currentIndex == pronouns.count - 1)
+                        .buttonStyle(PlainButtonStyle())
                     }
-                )
-                .clipShape(UnevenRoundedRectangle(topLeadingRadius: 25, topTrailingRadius: 25))
-                .frame(height: fullCardHeight)
-                .offset(y: isCardOpen ? 0 : fullCardHeight - peekHeight)
-                .animation(.interactiveSpring(response: 0.5, dampingFraction: 0.8, blendDuration: 0.2), value: isCardOpen)
-                    TipView(selectwordstips,arrowEdge: .bottom)
-                        .padding(.bottom,-50)
-                        .tipBackground(Color.black.opacity(0.6))
-                        .fixedSize(horizontal: true, vertical: false)
+                    .frame(width: 800, height: 100)
+                    .background(Color.gray)
+                    
+//                    TipView(selectwordstips,arrowEdge: .bottom)
+//                        .padding(.bottom,-100)
+//                        .tipBackground(Color.black.opacity(0.6))
+//                        .fixedSize(horizontal: true, vertical: false)
                 }
+//                .ignoresSafeArea(.all, edges: .bottom)
+                //                    .frame(maxHeight: .infinity)
+                
+
             }
-            .ignoresSafeArea(.all, edges: .bottom)
+            //            .frame(maxHeight: .infinity, alignment: .bottom)
+         if let tip = tips.currentTip as? selectWordsTips {
+            TipView(selectwordstips,arrowEdge: .bottom)
+                .zIndex(1)
+                .padding(.bottom,80)
+                .tipBackground(Color.black)
+                .fixedSize(horizontal: true, vertical: false)
+         }
             
-            //MARK: Overlay cek bener apa engga
-            if showOverlay {
-                Color.black.opacity(0.4).ignoresSafeArea()
-                Image(systemName: "checkmark.circle.fill")
-                    .resizable()
-                    .frame(width: 150, height: 150)
-                    .foregroundColor(.green)
-                    .transition(.scale.combined(with: .opacity))
-            }
-            if showHelpModal {
-                Color.black.opacity(0.4).ignoresSafeArea()
-                HelpModalView(showHelpModal: $showHelpModal)
-            }
+            
         }
+        //        ZStack{
+        
+        //        }
         .navigationBarBackButtonHidden(true)
         .onAppear {
             camera.start()
@@ -273,12 +294,10 @@ struct TestingView: View {
         }
         //MARK: uncomment this on prod
         .task {
-            // Configure and load your tips at app launch.
             do {
                 try Tips.configure()
             }
             catch {
-                // Handle TipKit errors
                 print("Error initializing TipKit \(error.localizedDescription)")
             }
         }
@@ -347,6 +366,26 @@ struct TestingView: View {
             .padding()
             .frame(width: 400, height: 300)
         }
+        //MARK: Overlay cek bener apa engga
+        ZStack {
+            if showOverlay {
+                Color.black.opacity(0.4).ignoresSafeArea()
+                Image(systemName: "checkmark.circle.fill")
+                    .resizable()
+                    .frame(width: 150, height: 150)
+                    .foregroundColor(.green)
+                    .transition(.opacity)
+            }
+        }
+        .animation(.easeInOut(duration: 0.3), value: showOverlay)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        if showHelpModal {
+            ZStack{
+                Color.black.opacity(0.4).ignoresSafeArea()
+                HelpModalView(showHelpModal: $showHelpModal)
+            }
+            
+        }
     }
 }
 
@@ -359,32 +398,14 @@ struct CardView: View {
     @Binding var currentIndex: Int
     let onWordSelected: (String) -> Void
     var body: some View {
+        Spacer()
         ZStack {
             UnevenRoundedRectangle(topLeadingRadius: 25, topTrailingRadius: 25)
-                .fill(LinearGradient(gradient: Gradient(colors: [Color.blue.opacity(0.8), Color.blue]), startPoint: .top, endPoint: .bottom))
+                .fill(LinearGradient(gradient: Gradient(colors: [Color.gray.opacity(0.8), Color.gray]), startPoint: .top, endPoint: .bottom))
                 .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: -5)
+//                .background(Color.red)
             
             VStack {
-                // MARK: Chevron untuk Animasi
-                HStack {
-                    Spacer()
-                    Text(isCardOpen ? "Tutup" : "Ingin Belajar Kata Ganti Lain? Pilih Disini!")
-                    Image(systemName: "chevron.up")
-                        .font(.title2)
-                        .foregroundColor(.white.opacity(0.8))
-                        .rotationEffect(.degrees(isCardOpen ? 180 : 0))
-                        .animation(.interactiveSpring(response: 0.5, dampingFraction: 0.8, blendDuration: 0.2), value: isCardOpen)
-                    Spacer()
-                }
-                .frame(width: .infinity)
-                .padding(.vertical, 16)
-                .background(LinearGradient(gradient: Gradient(colors: [Color.blue.opacity(0.4), Color.blue]), startPoint: .top, endPoint: .bottom))
-                .onTapGesture {
-                    isCardOpen.toggle()
-                }
-                
-                Spacer()
-                
                 if isCardOpen {
                     Text("Pilih Kata Ganti")
                         .font(.headline)
@@ -404,9 +425,13 @@ struct CardView: View {
                                 HStack{
                                     Text(word)
                                         .frame(maxWidth: .infinity, minHeight: 40)
-                                        .background(completedWords.contains(word) ? Color.green.opacity(0.5) : Color.white.opacity(0.2) )
+                                        .background(completedWords.contains(word) ? Color.green.opacity(0.5) : Color.blue.opacity(0.8))
                                         .foregroundColor(.white)
                                         .cornerRadius(8)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 8)
+                                                .stroke(Color.white, lineWidth: selectedWord == word ? 2 : 0)
+                                        )
                                     Spacer()
                                 }
                             }
@@ -414,17 +439,13 @@ struct CardView: View {
                         }
                     }
                     .padding(.horizontal)
-                    .padding(.bottom, 50)
                 } else {
                     Spacer()
-                    Text("Tekan Chevron untuk Membuka")
-                        .font(.subheadline)
-                        .foregroundColor(.white.opacity(0.9))
-                        .padding(.bottom, 20)
+                        .padding(.bottom, -20)
                 }
             }
         }
-        .frame(width: 1200)
+        .frame(width: 600)
     }
 }
 
