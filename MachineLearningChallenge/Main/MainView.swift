@@ -9,7 +9,8 @@ import SwiftUI
 struct MainView: View {
     @State private var selectedLevel: Int? = nil
     @State private var navigateToTesting: Bool = false
-    
+    @State private var navigateToGamePreview: Bool = false  // ✅ new
+
     var body: some View {
         NavigationStack {
             GeometryReader { geo in
@@ -43,9 +44,15 @@ struct MainView: View {
                                             ),
                                             arrowEdge: .trailing
                                         ) {
-                                            ModalView(level: level){
-                                                navigateToTesting = true
-                                            }
+                                            ModalView(
+                                                level: level,
+                                                onStartLearning: {
+                                                    navigateToTesting = true
+                                                },
+                                                onRepeatBossBattle: {
+                                                    navigateToGamePreview = true
+                                                }
+                                            )
                                             .frame(
                                                 minWidth: 300,
                                                 idealWidth: 400,
@@ -65,7 +72,6 @@ struct MainView: View {
                         .frame(minHeight: geo.size.height + 220)
                     }
                     .onAppear {
-                        // scroll to Level 1 at launch:
                         if let firstID = levels.first?.id {
                             proxy.scrollTo(firstID, anchor: .bottom)
                         }
@@ -73,6 +79,9 @@ struct MainView: View {
                 }
                 .navigationDestination(isPresented: $navigateToTesting) {
                     TestingView(onBack: { navigateToTesting = false })
+                }
+                .navigationDestination(isPresented: $navigateToGamePreview) {  // ✅ new
+                    GamePreview()  // <-- navigasi ke sini
                 }
             }
         }
@@ -82,29 +91,33 @@ struct MainView: View {
 struct ModalView: View {
     let level: Level
     let onStartLearning: () -> Void
-    
+    let onRepeatBossBattle: () -> Void  // ✅ new
+
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(level.title)
                 .font(.title).bold()
-            
+
             ScrollView {
                 Text(level.content)
                     .fixedSize(horizontal: false, vertical: true)
             }
-            
+
             Spacer()
-            
+
             Button("Mulai Belajar") {
                 onStartLearning()
             }
             .buttonStyle(PrimaryButtonStyle())
-            
-            Button("Ulangi Boss Battle") { /*…*/ }
-                .buttonStyle(SecondaryButtonStyle())
+
+            Button("Ulangi Boss Battle") {
+                onRepeatBossBattle()
+            }
+            .buttonStyle(SecondaryButtonStyle())
         }
     }
 }
+
 
 // MARK: - Preview
 
