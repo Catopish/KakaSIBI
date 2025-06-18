@@ -186,10 +186,6 @@ struct TestingView: View {
             // MARK: - Komponen Pembuka Kartu
             ZStack{
 //                Spacer()
-                TipView(selectwordstips,arrowEdge: .bottom)
-                    .padding(.bottom,-200)
-                    .tipBackground(Color.black.opacity(0.6))
-                    .fixedSize(horizontal: true, vertical: false)
                 VStack {
                     
                     CardView(
@@ -222,21 +218,20 @@ struct TestingView: View {
                         Button(action: {
                             isCardOpen.toggle()
                         }) {
-                            Text(pronouns[currentIndex])
-                            
-                            Image(systemName: "chevron.up")
-                            //                                                    .foregroundColor(Color.white)
+                            HStack{
+                                Text(pronouns[currentIndex])
+                                Image(systemName: "chevron.up")
+                            }
+                            .frame(width: 200)
+                            .font(.title)
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(Color.blue)
+                            .clipShape(Capsule())
+                            .contentShape(Rectangle())
                         }
                         .buttonStyle(PlainButtonStyle())
-                        .frame(width: 200)
-                        .font(.title)
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(Color.blue)
-                        .clipShape(Capsule())
-                        //                                            .hoverEffect(.highlight) // Menambahkan efek hover
-                        //                                            .padding(.bottom, 20)
                         
                         Button(action: {
                             updateSelectedWord(to: currentIndex + 1)
@@ -257,12 +252,16 @@ struct TestingView: View {
 //                        .tipBackground(Color.black.opacity(0.6))
 //                        .fixedSize(horizontal: true, vertical: false)
                 }
-                .ignoresSafeArea(.all, edges: .bottom)
+//                .ignoresSafeArea(.all, edges: .bottom)
                 //                    .frame(maxHeight: .infinity)
                 
+
             }
             //            .frame(maxHeight: .infinity, alignment: .bottom)
-            
+            TipView(selectwordstips,arrowEdge: .bottom)
+                .padding(.bottom,80)
+                .tipBackground(Color.black.opacity(0.6))
+                .fixedSize(horizontal: true, vertical: false)
             
             
         }
@@ -387,6 +386,7 @@ struct CardView: View {
             UnevenRoundedRectangle(topLeadingRadius: 25, topTrailingRadius: 25)
                 .fill(LinearGradient(gradient: Gradient(colors: [Color.gray.opacity(0.8), Color.gray]), startPoint: .top, endPoint: .bottom))
                 .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: -5)
+//                .background(Color.red)
             
             VStack {
                 if isCardOpen {
