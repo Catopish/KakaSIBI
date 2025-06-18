@@ -172,7 +172,7 @@ struct TestingView: View {
                                     .frame(width: geometry.size.width * 0.35, height: geometry.size.height * 0.9)
                                     
                                     ZStack{
-                                        CameraPreview(session: camera.session)
+                                        CameraPreview(session: camera.session,model: camera)
                                             .cornerRadius(8)
                                             .shadow(radius: 4)
                                         if let tip = tips.currentTip as? videoPreviewTips {
