@@ -9,7 +9,7 @@ struct videoTips: Tip {
         Text("Tonton tutorialnya dulu, ya!")
     }
     var message: Text? {
-        Text("Dengan nonton video ini dulu, kamu bakal lebih paham cara bikin gerakan bahasa isyarat.")
+        Text("Dengan nonton video ini dulu, kamu bakal lebih paham\ncara bikin gerakan bahasa isyarat.")
     }
     var image: Image? {
         Image(systemName: "1.circle")
@@ -57,6 +57,12 @@ struct TestingView: View {
     var videopreviewtips = videoPreviewTips()
     var selectwordstips = selectWordsTips()
     
+    @State private var tips: TipGroup = TipGroup(.ordered) {
+      videoTips()
+      videoPreviewTips()
+      selectWordsTips()
+    }
+
     @AppStorage("completedPronounsRaw") private var completedPronounsRaw: String = ""
     private var completedWords: Set<String> {
         get { Set(completedPronounsRaw
@@ -152,9 +158,15 @@ struct TestingView: View {
                                                 .clipShape(RoundedRectangle(cornerRadius: 8))
                                                 .frame(width: geometry.size.width * 0.35, height: geometry.size.height * 0.75)
                                         }
-                                        TipView(videotips, arrowEdge: .top)
-                                            .tipBackground(Color.black.opacity(0.6))
-                                            .fixedSize(horizontal: true, vertical: false)
+
+                                        if let tip = tips.currentTip as? videoTips {
+                                            TipView(videotips, arrowEdge: .top)
+                                                .zIndex(1)
+                                                .padding(.bottom,-300)
+                                                .tipBackground(Color.black)
+                                                .fixedSize(horizontal: true, vertical: false)
+                                                .padding(.leading,50)
+                                        }
                                     }
                                     .clipShape(RoundedRectangle(cornerRadius: 8))
                                     .frame(width: geometry.size.width * 0.35, height: geometry.size.height * 0.9)
@@ -163,9 +175,13 @@ struct TestingView: View {
                                         CameraPreview(session: camera.session)
                                             .cornerRadius(8)
                                             .shadow(radius: 4)
-                                        TipView(videopreviewtips, arrowEdge: .top)
-                                            .tipBackground(Color.black.opacity(0.6))
-                                            .fixedSize(horizontal: true, vertical: false)
+                                        if let tip = tips.currentTip as? videoPreviewTips {
+                                            TipView(videopreviewtips, arrowEdge: .top)
+                                                .zIndex(1)
+                                                .padding(.bottom,-300)
+                                                .tipBackground(Color.black)
+                                                .fixedSize(horizontal: true, vertical: false)
+                                        }
                                     }
                                     .clipShape(RoundedRectangle(cornerRadius: 8))
                                     .frame(width: geometry.size.width * 0.635, height: geometry.size.height * 0.75)
@@ -258,10 +274,13 @@ struct TestingView: View {
 
             }
             //            .frame(maxHeight: .infinity, alignment: .bottom)
+         if let tip = tips.currentTip as? selectWordsTips {
             TipView(selectwordstips,arrowEdge: .bottom)
+                .zIndex(1)
                 .padding(.bottom,80)
-                .tipBackground(Color.black.opacity(0.6))
+                .tipBackground(Color.black)
                 .fixedSize(horizontal: true, vertical: false)
+         }
             
             
         }
@@ -275,12 +294,10 @@ struct TestingView: View {
         }
         //MARK: uncomment this on prod
         .task {
-            // Configure and load your tips at app launch.
             do {
                 try Tips.configure()
             }
             catch {
-                // Handle TipKit errors
                 print("Error initializing TipKit \(error.localizedDescription)")
             }
         }
