@@ -137,6 +137,7 @@ struct TestingView: View {
                                         Image(systemName: "questionmark.circle.fill")
                                             .font(.system(size: 24))
                                             .padding(.trailing,20)
+                                            .foregroundStyle(Color.blue)
                                     }
                                     .buttonStyle(PlainButtonStyle())
                                 }
@@ -175,7 +176,7 @@ struct TestingView: View {
                                                 .frame(width: geometry.size.width * 0.35, height: geometry.size.height * 0.75)
                                             VStack {
                                                 HStack{
-                                                    Text("Perhatikan Video Tutorial Ini")
+                                                    Text("Perhatikan video tutorial ini")
                                                         .font(.headline)
                                                 }
                                                 .clipShape(UnevenRoundedRectangle(topLeadingRadius: 8, topTrailingRadius: 8))
@@ -185,15 +186,6 @@ struct TestingView: View {
                                                 Spacer()
                                             }
                                         }
-
-//                                        if let tip = tips.currentTip as? videoTips {
-//                                            TipView(videotips, arrowEdge: .top)
-//                                                .zIndex(1)
-//                                                .padding(.bottom,-300)
-//                                                .tipBackground(Color.black)
-//                                                .fixedSize(horizontal: true, vertical: false)
-//                                                .padding(.leading,50)
-//                                        }
                                     }
                                     .clipShape(RoundedRectangle(cornerRadius: 8))
                                     .frame(width: geometry.size.width * 0.35, height: geometry.size.height * 0.9)
@@ -204,7 +196,7 @@ struct TestingView: View {
                                             .shadow(radius: 4)
                                         VStack {
                                             HStack{
-                                                Text("Coba Peragakan Yang Sudah Dicontohkan Oleh Video Tutorial")
+                                                Text("Peragakan yang sudah dicontohkan oleh video")
                                                     .font(.headline)
                                             }
                                             .clipShape(UnevenRoundedRectangle(topLeadingRadius: 8, topTrailingRadius: 8))
@@ -296,20 +288,7 @@ struct TestingView: View {
                 }
 
             }
-            //            .frame(maxHeight: .infinity, alignment: .bottom)
-//         if let tip = tips.currentTip as? selectWordsTips {
-//            TipView(selectwordstips,arrowEdge: .bottom)
-//                .zIndex(1)
-//                .padding(.bottom,80)
-//                .tipBackground(Color.black)
-//                .fixedSize(horizontal: true, vertical: false)
-//         }
-            
-            
         }
-        //        ZStack{
-        
-        //        }
         .navigationBarBackButtonHidden(true)
         .onAppear {
             camera.start()
@@ -365,27 +344,35 @@ struct TestingView: View {
                         .font(.headline)
                     
                     HStack(spacing: 20) {
-                        Button("Let's Go") {
+                        Button (action: {
                             // Navigasi ke halaman berikutnya
                             print("User chose to go!")
                             showCompletionModal = false
                             navigateToGamePreview = true
                             //                        GamePreview()
+                        })
+                        {
+                            Text("Let's Go")
+                                .padding()
+                                .frame(maxWidth: .infinity)
+                                .background(Color.blue)
+                                .foregroundColor(.white)
+                                .cornerRadius(10)
                         }
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color.blue)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
+                        .buttonStyle(PlainButtonStyle())
                         
-                        Button("Do it Later") {
+                        Button (action: {
                             showCompletionModal = false
+                        })
+                        {
+                            Text("Do it Later")
+                                .padding()
+                                .frame(maxWidth: .infinity)
+                                .background(Color.gray.opacity(0.3))
+                                .foregroundColor(.primary)
+                                .cornerRadius(10)
                         }
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color.gray.opacity(0.3))
-                        .foregroundColor(.primary)
-                        .cornerRadius(10)
+                        .buttonStyle(PlainButtonStyle())
                     }
                     .padding(.horizontal)
                 }
@@ -591,14 +578,19 @@ struct HelpModalView: View {
                             currentPage += 1
                         }
                     } else {
-                        Button("Tutup") {
+                        Button (action: {
                             showHelpModal = false
+                        })
+                        {
+                            Text("Tutup")
+                                .padding(.horizontal, 24)
+                                .padding(.vertical, 12)
+                                .background(Color.blue)
+                                .foregroundColor(.white)
+                                .cornerRadius(8)
+                                .contentShape(Rectangle())
                         }
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 24)
-                        .padding(.vertical, 12)
-                        .background(Color.blue)
-                        .cornerRadius(8)
+                        .buttonStyle(PlainButtonStyle())
                     }
                 }
                 .font(.headline)

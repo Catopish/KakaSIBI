@@ -110,7 +110,7 @@ struct ModalView: View {
             }
             .buttonStyle(PrimaryButtonStyle())
 
-            Button("Ulangi Boss Battle") {
+            Button("Masuk ke training ground!") {
                 onRepeatBossBattle()
             }
             .buttonStyle(SecondaryButtonStyle())
