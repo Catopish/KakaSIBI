@@ -528,11 +528,17 @@ struct HelpModalView: View {
         "2. Duduk dan posisikan diri Anda sejauh lengan Anda dari layar depan kamera.",
         "3. Tonton video instruksi terlebih dahulu.",
         "4. Peragakan ulang bahasa isyarat di depan kamera Anda.",
-        "5. Jika gerakan sesuai, tanda centang akan muncul."
+        "5. Jika gerakan sesuai, tanda centang akan muncul.",
+        "6. Gunakan panel bawah untuk memilih kata berikutnya"
     ]
     
     private let images: [String] = [
-        "TestImageModal"
+        "PhotoBright",
+        "ArmsLength",
+        "TestImageModal",
+        "TestingImageModal2",
+        "Checkmark",
+        "TestingImageModal3"
     ]
         
     var body: some View {
@@ -546,7 +552,7 @@ struct HelpModalView: View {
                         .font(.body)
                         .multilineTextAlignment(.leading)
                     
-                    Image("TestImageModal")
+                    Image(images[currentPage])
                         .resizable()
                         .scaledToFit()
                         .frame(height: 200)
