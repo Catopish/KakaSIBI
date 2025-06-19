@@ -144,13 +144,25 @@ struct TestingView: View {
                                 
                                 HStack (alignment: .center, spacing: 24){
                                     ZStack {
+                                        
                                         // Video berubah berdasarkan selectedWord
                                         if let selectedWord = selectedWord,
                                            let videoURL = getVideoURL(for: selectedWord) {
+                                            
                                             VideoContainerView(videoURL: videoURL)
                                                 .id(selectedWord) // Force refresh when word changes
                                                 .clipShape(RoundedRectangle(cornerRadius: 8))
                                                 .frame(width: geometry.size.width * 0.35, height: geometry.size.height * 0.75)
+                                            VStack {
+                                                HStack{
+                                                    Text("Perhatikan Video Tutorial Ini")
+                                                }
+                                                .clipShape(UnevenRoundedRectangle(topLeadingRadius: 8, topTrailingRadius: 8))
+                                                .frame(width: geometry.size.width * 0.35, height: 50)
+                                                .background(Color.gray.opacity(0.5))
+                                                .padding(.top, 70)
+                                                Spacer()
+                                            }
                                         } else {
                                             // Default video jika tidak ada yang dipilih
                                             VideoContainerView(videoURL: Bundle.main.url(forResource: "aku", withExtension: "mov")!)
@@ -175,6 +187,16 @@ struct TestingView: View {
                                         CameraPreview(session: camera.session)
                                             .cornerRadius(8)
                                             .shadow(radius: 4)
+                                        VStack {
+                                            HStack{
+                                                Text("Coba Peragakan Yang Sudah Dicontohkan Oleh Video Tutorial")
+                                            }
+                                            .clipShape(UnevenRoundedRectangle(topLeadingRadius: 8, topTrailingRadius: 8))
+                                            .frame(width: geometry.size.width * 0.635, height: 50)
+                                            .background(Color.gray.opacity(0.5))
+//                                            .padding(.top, 70)
+                                            Spacer()
+                                        }
                                         if let tip = tips.currentTip as? videoPreviewTips {
                                             TipView(videopreviewtips, arrowEdge: .top)
                                                 .zIndex(1)
@@ -187,7 +209,7 @@ struct TestingView: View {
                                     .frame(width: geometry.size.width * 0.635, height: geometry.size.height * 0.75)
                                 }
                                 .frame(height: geometry.size.height)
-                                .padding(.top, 35)
+//                                .padding(.top, )
                             }
                         }
                         .padding(8)
@@ -260,17 +282,9 @@ struct TestingView: View {
                         .disabled(currentIndex == pronouns.count - 1)
                         .buttonStyle(PlainButtonStyle())
                     }
-                    .frame(width: 800, height: 100)
-                    .background(Color.gray)
-                    
-//                    TipView(selectwordstips,arrowEdge: .bottom)
-//                        .padding(.bottom,-100)
-//                        .tipBackground(Color.black.opacity(0.6))
-//                        .fixedSize(horizontal: true, vertical: false)
+                    .frame(width: 1500, height: 100)
+                    .background(Color.white)
                 }
-//                .ignoresSafeArea(.all, edges: .bottom)
-                //                    .frame(maxHeight: .infinity)
-                
 
             }
             //            .frame(maxHeight: .infinity, alignment: .bottom)
@@ -376,7 +390,7 @@ struct TestingView: View {
                     .foregroundColor(.green)
                     .transition(.opacity)
             }
-        }
+        }   
         .animation(.easeInOut(duration: 0.3), value: showOverlay)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         if showHelpModal {
@@ -401,7 +415,7 @@ struct CardView: View {
         Spacer()
         ZStack {
             UnevenRoundedRectangle(topLeadingRadius: 25, topTrailingRadius: 25)
-                .fill(LinearGradient(gradient: Gradient(colors: [Color.gray.opacity(0.8), Color.gray]), startPoint: .top, endPoint: .bottom))
+                .fill(LinearGradient(gradient: Gradient(colors: [Color.white.opacity(0.8), Color.white]), startPoint: .top, endPoint: .bottom))
                 .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: -5)
 //                .background(Color.red)
             
@@ -409,7 +423,7 @@ struct CardView: View {
                 if isCardOpen {
                     Text("Pilih Kata Ganti")
                         .font(.headline)
-                        .foregroundColor(.white)
+                        .foregroundColor(.black)
                         .padding(.bottom, 8)
                     
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 3), spacing: 10) {
@@ -426,11 +440,11 @@ struct CardView: View {
                                     Text(word)
                                         .frame(maxWidth: .infinity, minHeight: 40)
                                         .background(completedWords.contains(word) ? Color.green.opacity(0.5) : Color.blue.opacity(0.8))
-                                        .foregroundColor(.white)
+                                        .foregroundColor(.black)
                                         .cornerRadius(8)
                                         .overlay(
                                             RoundedRectangle(cornerRadius: 8)
-                                                .stroke(Color.white, lineWidth: selectedWord == word ? 2 : 0)
+                                                .stroke(Color.black, lineWidth: selectedWord == word ? 2 : 0)
                                         )
                                     Spacer()
                                 }
