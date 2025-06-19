@@ -100,7 +100,10 @@ struct TestingView: View {
         }
     }
     
+    @State private var navigateToGamePreview: Bool = false
+    
     var body: some View {
+        
         ZStack (alignment: .bottom){
             // MARK: - Konten Utama Aplikasi
             Color.gray.opacity(0.1)
@@ -156,10 +159,11 @@ struct TestingView: View {
                                             VStack {
                                                 HStack{
                                                     Text("Perhatikan Video Tutorial Ini")
+                                                        .font(.headline)
                                                 }
                                                 .clipShape(UnevenRoundedRectangle(topLeadingRadius: 8, topTrailingRadius: 8))
                                                 .frame(width: geometry.size.width * 0.35, height: 50)
-                                                .background(Color.gray.opacity(0.5))
+                                                .background(Color.gray)
                                                 .padding(.top, 70)
                                                 Spacer()
                                             }
@@ -169,6 +173,17 @@ struct TestingView: View {
                                                 .id("aku") // Default ID
                                                 .clipShape(RoundedRectangle(cornerRadius: 8))
                                                 .frame(width: geometry.size.width * 0.35, height: geometry.size.height * 0.75)
+                                            VStack {
+                                                HStack{
+                                                    Text("Perhatikan Video Tutorial Ini")
+                                                        .font(.headline)
+                                                }
+                                                .clipShape(UnevenRoundedRectangle(topLeadingRadius: 8, topTrailingRadius: 8))
+                                                .frame(width: geometry.size.width * 0.35, height: 50)
+                                                .background(Color.gray)
+                                                .padding(.top, 70)
+                                                Spacer()
+                                            }
                                         }
 
                                         if let tip = tips.currentTip as? videoTips {
@@ -190,10 +205,11 @@ struct TestingView: View {
                                         VStack {
                                             HStack{
                                                 Text("Coba Peragakan Yang Sudah Dicontohkan Oleh Video Tutorial")
+                                                    .font(.headline)
                                             }
                                             .clipShape(UnevenRoundedRectangle(topLeadingRadius: 8, topTrailingRadius: 8))
                                             .frame(width: geometry.size.width * 0.635, height: 50)
-                                            .background(Color.gray.opacity(0.5))
+                                            .background(Color.gray)
 //                                            .padding(.top, 70)
                                             Spacer()
                                         }
@@ -283,7 +299,7 @@ struct TestingView: View {
                         .buttonStyle(PlainButtonStyle())
                     }
                     .frame(width: 1500, height: 100)
-                    .background(Color.white)
+                    .background(Color.gray)
                 }
 
             }
@@ -345,40 +361,47 @@ struct TestingView: View {
         }
         
         .sheet(isPresented: $showCompletionModal) {
-            VStack(spacing: 20) {
-                Text("🎉 Kamu sudah membuka Training Ground!")
-                    .font(.title)
-                    .multilineTextAlignment(.center)
-                    .padding()
-                
-                Text("Ingin mencoba skill-mu?")
-                    .font(.headline)
-                
-                HStack(spacing: 20) {
-                    Button("Let's Go") {
-                        // Navigasi ke halaman berikutnya
-                        print("User chose to go!")
-                        showCompletionModal = false
-                    }
-                    .padding()
-                    .frame(maxWidth: .infinity)
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
+//            NavigationStack {
+                VStack(spacing: 20) {
+                    Text("🎉 Kamu sudah membuka Training Ground!")
+                        .font(.title)
+                        .multilineTextAlignment(.center)
+                        .padding()
                     
-                    Button("Do it Later") {
-                        showCompletionModal = false
+                    Text("Ingin mencoba skill-mu?")
+                        .font(.headline)
+                    
+                    HStack(spacing: 20) {
+                        Button("Let's Go") {
+                            // Navigasi ke halaman berikutnya
+                            print("User chose to go!")
+                            showCompletionModal = false
+                            navigateToGamePreview = true
+                            //                        GamePreview()
+                        }
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                        
+                        Button("Do it Later") {
+                            showCompletionModal = false
+                        }
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(Color.gray.opacity(0.3))
+                        .foregroundColor(.primary)
+                        .cornerRadius(10)
                     }
-                    .padding()
-                    .frame(maxWidth: .infinity)
-                    .background(Color.gray.opacity(0.3))
-                    .foregroundColor(.primary)
-                    .cornerRadius(10)
+                    .padding(.horizontal)
                 }
-                .padding(.horizontal)
-            }
-            .padding()
-            .frame(width: 400, height: 300)
+                .padding()
+                .frame(width: 400, height: 300)
+                .navigationDestination(isPresented: $navigateToGamePreview) {  // ✅ new
+                    GamePreview()  // <-- navigasi ke sini
+                }
+//            }
         }
         //MARK: Overlay cek bener apa engga
         ZStack {
@@ -390,7 +413,14 @@ struct TestingView: View {
                     .foregroundColor(.green)
                     .transition(.opacity)
             }
-        }   
+        }
+        .background(
+            NavigationLink(destination: GamePreview(), isActive: $navigateToGamePreview) {
+                EmptyView()
+            }
+                .buttonStyle(PlainButtonStyle())
+        )
+        
         .animation(.easeInOut(duration: 0.3), value: showOverlay)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         if showHelpModal {
@@ -400,6 +430,7 @@ struct TestingView: View {
             }
             
         }
+        
     }
 }
 
@@ -415,7 +446,7 @@ struct CardView: View {
         Spacer()
         ZStack {
             UnevenRoundedRectangle(topLeadingRadius: 25, topTrailingRadius: 25)
-                .fill(LinearGradient(gradient: Gradient(colors: [Color.white.opacity(0.8), Color.white]), startPoint: .top, endPoint: .bottom))
+                .fill(LinearGradient(gradient: Gradient(colors: [Color.gray.opacity(0.8), Color.gray]), startPoint: .top, endPoint: .bottom))
                 .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: -5)
 //                .background(Color.red)
             
@@ -423,7 +454,7 @@ struct CardView: View {
                 if isCardOpen {
                     Text("Pilih Kata Ganti")
                         .font(.headline)
-                        .foregroundColor(.black)
+                        .foregroundColor(.white)
                         .padding(.bottom, 8)
                     
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 3), spacing: 10) {
@@ -440,11 +471,11 @@ struct CardView: View {
                                     Text(word)
                                         .frame(maxWidth: .infinity, minHeight: 40)
                                         .background(completedWords.contains(word) ? Color.green.opacity(0.5) : Color.blue.opacity(0.8))
-                                        .foregroundColor(.black)
+                                        .foregroundColor(.white)
                                         .cornerRadius(8)
                                         .overlay(
                                             RoundedRectangle(cornerRadius: 8)
-                                                .stroke(Color.black, lineWidth: selectedWord == word ? 2 : 0)
+                                                .stroke(Color.white, lineWidth: selectedWord == word ? 2 : 0)
                                         )
                                     Spacer()
                                 }
@@ -503,11 +534,3 @@ struct HelpModalView: View {
         }
     }
 }
-
-// MARK: - Preview untuk Xcode Canvas
-//struct TestingView_Previews: PreviewProvider {
-//    static var previews: some View {
-//        TestingView()
-//            .frame(width: 1500, height: 600)
-//    }
-//}
