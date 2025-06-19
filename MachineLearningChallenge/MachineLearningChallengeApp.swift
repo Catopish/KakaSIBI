@@ -28,6 +28,16 @@ struct MachineLearningChallengeApp: App {
     var body: some Scene {
         WindowGroup {
             MainView()
+                .onAppear {
+                                // Dapatkan jendela aktif saat ini
+                                if let window = NSApplication.shared.windows.first {
+                                    // Cek apakah belum fullscreen
+                                    if !window.styleMask.contains(.fullScreen) {
+                                        window.toggleFullScreen(nil)
+                                    }
+                                }
+                            }
+            //            GamePreview()
 //            ContentView()
                 .frame(minWidth: 800, minHeight: 600)
         }
