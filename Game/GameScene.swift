@@ -83,9 +83,9 @@ class GameScene: SKScene {
         let scoreLabel = SKLabelNode(text: "Score: 0")
         scoreLabel.name = "scoreLabel"
         scoreLabel.fontName = "PressStart2P-Regular" // Set font ONCE here
-        scoreLabel.fontSize = 20
+        scoreLabel.fontSize = 30
         scoreLabel.fontColor = .white
-        scoreLabel.position = CGPoint(x: frame.midX, y: frame.maxY - 50)
+        scoreLabel.position = CGPoint(x: frame.midX, y: frame.maxY - 100)
         scoreLabel.zPosition = 100
         addChild(scoreLabel)
 
@@ -95,7 +95,7 @@ class GameScene: SKScene {
         
         let spawnAction = SKAction.repeatForever(SKAction.sequence([
             SKAction.run { [weak self] in self?.spawnEnemy() },
-            SKAction.wait(forDuration: 3.0)
+            SKAction.wait(forDuration: 5.0)
         ]))
         
         run(spawnAction, withKey: "spawnEnemies")
@@ -174,6 +174,7 @@ class GameScene: SKScene {
             }
         }
         
+        player.removeAllActions()
         showGameOverOverlay()
     }
     
@@ -185,6 +186,7 @@ class GameScene: SKScene {
         overlay.position = CGPoint.zero
         overlay.zPosition = 1000
         overlay.name = "gameOverOverlay"
+        overlay.addChild(makeRetryLabel())
         addChild(overlay)
         
         let gameOverLabel = SKLabelNode(text: "Game Over")
@@ -194,20 +196,12 @@ class GameScene: SKScene {
         gameOverLabel.position = CGPoint(x: 0, y: 60)
         overlay.addChild(gameOverLabel)
         
-        let retryLabel = SKLabelNode(text: "Retry")
-        retryLabel.fontName = "PressStart2P-Regular"
-        retryLabel.name = "retry"
-        retryLabel.fontSize = 30
-        retryLabel.fontColor = .green
-        retryLabel.position = CGPoint(x: 0, y: 10)
-        overlay.addChild(retryLabel)
-        
         let menuLabel = SKLabelNode(text: "Main Menu")
         menuLabel.fontName = "PressStart2P-Regular"
         menuLabel.name = "mainMenu"
         menuLabel.fontSize = 30
         menuLabel.fontColor = .yellow
-        menuLabel.position = CGPoint(x: 0, y: -40)
+        menuLabel.position = CGPoint(x: 0, y: 1)
         overlay.addChild(menuLabel)
     }
     
@@ -227,13 +221,13 @@ class GameScene: SKScene {
     }
     
     private func updateSpriteBasedOnPrediction(_ prediction: String) {
-        switch prediction {
-        case "Aku", "Dia", "Kita", "Mereka", "Kami":
-            player.texture = SKTexture(imageNamed: "Spaceship_1")
-        default:
-            player.texture = SKTexture(imageNamed: "NewSpaceship")
-        }
-        
+//        switch prediction {
+//        case "Aku", "Dia", "Kita", "Mereka", "Kami":
+//            player.texture = SKTexture(imageNamed: "Spaceship_1")
+//        default:
+//            player.texture = SKTexture(imageNamed: "NewSpaceship")
+//        }
+//        
         if prediction != lastProcessedPrediction {
             canShoot = true
         }
@@ -349,7 +343,7 @@ class GameScene: SKScene {
         for i in 0..<lives {
             let heart = SKSpriteNode(imageNamed: "Heart") // 🖼 Make sure to add a heart image to Assets
             heart.size = CGSize(width: 40, height: 40)
-            heart.position = CGPoint(x: -size.width / 2 + CGFloat(i) * 50 + 30, y: size.height / 2 - 50)
+            heart.position = CGPoint(x: -size.width / 2 + CGFloat(i) * 50 + 30, y: (size.height / 2 - 50) - 30)
             heart.zPosition = 999
             heartNodes.append(heart)
             addChild(heart)
@@ -373,17 +367,21 @@ class GameScene: SKScene {
             }
         }
         
+        player.removeAllActions()
         showVictoryOverlay()
     }
     
     
     private func showVictoryOverlay() {
         let overlay = SKShapeNode(rectOf: CGSize(width: size.width * 0.8, height: size.height * 0.4), cornerRadius: 20)
-        overlay.fillColor = .green
+        overlay.fillColor = .gray
+        overlay.strokeColor = .gold
+        overlay.lineWidth = 3
         overlay.alpha = 0.8
         overlay.position = CGPoint.zero
         overlay.zPosition = 1000
         overlay.name = "victoryOverlay"
+        overlay.addChild(makeRetryLabel())
         addChild(overlay)
         
         let victoryLabel = SKLabelNode(text: "You Win!")
@@ -398,8 +396,18 @@ class GameScene: SKScene {
         menuLabel.name = "mainMenu"
         menuLabel.fontSize = 30
         menuLabel.fontColor = .yellow
-        menuLabel.position = CGPoint(x: 0, y: -40)
+        menuLabel.position = CGPoint(x: 0, y: 1)
         overlay.addChild(menuLabel)
+    }
+    
+    func makeRetryLabel() -> SKLabelNode {
+        let retryLabel = SKLabelNode(text: "Retry")
+        retryLabel.name = "retry"
+        retryLabel.fontName = "PressStart2P-Regular"
+        retryLabel.fontSize = 30
+        retryLabel.fontColor = .green
+        retryLabel.position = CGPoint(x: 0, y: -60)
+        return retryLabel
     }
     
 }
