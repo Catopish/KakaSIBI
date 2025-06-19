@@ -62,7 +62,7 @@ class GameScene: SKScene {
         // Initialize player
         player = SKSpriteNode(imageNamed: "Ninja_1")
         player.size = CGSize(width: 100, height: 100)
-        let playerY = road1.position.y + road1.size.height + player.size.height / 2 - 20
+        let playerY = road1.position.y + road1.size.height + player.size.height / 2 - 40
         player.position = CGPoint(x: -size.width / 2 + player.size.width - 30, y: playerY)
         
         let texture1 = SKTexture(imageNamed: "Ninja_1")
@@ -114,19 +114,35 @@ class GameScene: SKScene {
             }
         }
         previousEnemyLabel = label
-        let enemy = SKSpriteNode(color: .red, size: CGSize(width: 80, height: 80))
+        
+        let enemy = SKSpriteNode(imageNamed: "Ghost_1")
+        let enemy1 = SKTexture(imageNamed: "Ghost_1")
+        let enemy2 = SKTexture(imageNamed: "Ghost_2")
+        let enemy3 = SKTexture(imageNamed: "Ghost_3")
+        let enemy4 = SKTexture(imageNamed: "Ghost_4")
+        
+        let enemyTextures = [enemy1, enemy2, enemy3, enemy4]
+        
+        let animation = SKAction.animate(with: enemyTextures, timePerFrame: 0.1)
+        let repeatAnimation = SKAction.repeatForever(animation)
+        
         enemy.name = label
+        enemy.run(repeatAnimation)
         
         let labelNode = SKLabelNode(text: label)
         labelNode.fontSize = 20
         labelNode.fontColor = .white
         labelNode.verticalAlignmentMode = .center
+        labelNode.fontName = "PressStart2P-Regular"
         enemy.addChild(labelNode)
         
         let startX = size.width / 2 + enemy.size.width
-        let enemyY = player.position.y
+        let enemyY = player.position.y + 20
         enemy.position = CGPoint(x: startX, y: enemyY)
         enemy.zPosition = 1
+        
+        let offsetY = enemy.size.height / 2 + 10 // 10 pts above the enemy's top
+        labelNode.position = CGPoint(x: 0, y: offsetY)
         addChild(enemy)
         
         let move = SKAction.move(to: CGPoint(x: player.position.x, y: enemyY), duration: 8.0)
@@ -290,7 +306,7 @@ class GameScene: SKScene {
         }
 
         
-        if points >= 2 {
+        if points >= 15 {
             endGameWithWin()
         }
     }
