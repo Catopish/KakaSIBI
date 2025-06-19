@@ -6,6 +6,7 @@
 // GameScene.swift
 
 import SpriteKit
+import SwiftUI
 
 enum GameState {
     case playing
@@ -315,20 +316,27 @@ class GameScene: SKScene {
         newScene.scaleMode = scaleMode
         view?.presentScene(newScene, transition: .fade(withDuration: 1.0))
     }
-    
     private func goToMainMenu() {
-        let menuScene = SKScene(size: size)
-        menuScene.scaleMode = scaleMode
-        menuScene.backgroundColor = .black
-        
-        let label = SKLabelNode(text: "Main Menu")
-        label.fontSize = 50
-        label.fontColor = .white
-        label.position = CGPoint(x: 0, y: 0)
-        menuScene.addChild(label)
-        
-        view?.presentScene(menuScene, transition: .fade(withDuration: 1.0))
+        // Navigate to SwiftUI MainView
+        guard let view = self.view, let window = view.window else { return }
+        let mainView = MainView()
+        let hostingController = NSHostingController(rootView: mainView)
+        window.contentViewController = hostingController
     }
+
+//    private func goToMainMenu() {
+//        let menuScene = SKScene(size: size)
+//        menuScene.scaleMode = scaleMode
+//        menuScene.backgroundColor = .black
+//        
+//        let label = SKLabelNode(text: "Main Menu")
+//        label.fontSize = 50
+//        label.fontColor = .white
+//        label.position = CGPoint(x: 0, y: 0)
+//        menuScene.addChild(label)
+//        
+//        view?.presentScene(menuScene, transition: .fade(withDuration: 1.0))
+//    }
     
     private func loseLife() {
         lives = lives - 1
