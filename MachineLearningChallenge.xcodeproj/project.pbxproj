@@ -269,10 +269,11 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = K4DX7TQK79;
+				DEVELOPMENT_TEAM = DVBG245BYT;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MachineLearningChallenge/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "KakaSIBI need camera access to see your beatiful face";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -299,10 +300,11 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = K4DX7TQK79;
+				DEVELOPMENT_TEAM = DVBG245BYT;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MachineLearningChallenge/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "KakaSIBI need camera access to see your beatiful face";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
