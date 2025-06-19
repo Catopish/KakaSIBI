@@ -69,6 +69,7 @@ final class CameraModel: NSObject, ObservableObject {
         session.startRunning()
     }
     
+    
     private func setupSession() {
         session.sessionPreset = .high
         guard
@@ -162,3 +163,5 @@ extension CameraModel: AVCaptureVideoDataOutputSampleBufferDelegate {
         }
     }
 }
+
+
