@@ -82,13 +82,16 @@ class GameScene: SKScene {
         
         let scoreLabel = SKLabelNode(text: "Score: 0")
         scoreLabel.name = "scoreLabel"
-        scoreLabel.fontSize = 30
+        scoreLabel.fontName = "PressStart2P-Regular" // Set font ONCE here
+        scoreLabel.fontSize = 20
         scoreLabel.fontColor = .white
-        scoreLabel.position = CGPoint(x: 0, y: size.height / 2 - 40)
-        scoreLabel.zPosition = 999
+        scoreLabel.position = CGPoint(x: frame.midX, y: frame.maxY - 50)
+        scoreLabel.zPosition = 100
         addChild(scoreLabel)
+
         
         observeHandSigns()
+        
         
         let spawnAction = SKAction.repeatForever(SKAction.sequence([
             SKAction.run { [weak self] in self?.spawnEnemy() },
@@ -185,12 +188,14 @@ class GameScene: SKScene {
         addChild(overlay)
         
         let gameOverLabel = SKLabelNode(text: "Game Over")
+        gameOverLabel.fontName = "PressStart2P-Regular"
         gameOverLabel.fontSize = 40
         gameOverLabel.fontColor = .white
         gameOverLabel.position = CGPoint(x: 0, y: 60)
         overlay.addChild(gameOverLabel)
         
         let retryLabel = SKLabelNode(text: "Retry")
+        retryLabel.fontName = "PressStart2P-Regular"
         retryLabel.name = "retry"
         retryLabel.fontSize = 30
         retryLabel.fontColor = .green
@@ -198,6 +203,7 @@ class GameScene: SKScene {
         overlay.addChild(retryLabel)
         
         let menuLabel = SKLabelNode(text: "Main Menu")
+        menuLabel.fontName = "PressStart2P-Regular"
         menuLabel.name = "mainMenu"
         menuLabel.fontSize = 30
         menuLabel.fontColor = .yellow
@@ -289,12 +295,12 @@ class GameScene: SKScene {
             scoreLabel.text = "Score: \(points)"
         }
 
-        if points >= 15 {
+        
+        if points >= 2 {
             endGameWithWin()
         }
     }
 
-    
     
     override func mouseDown(with event: NSEvent) {
         let location = event.location(in: self)
@@ -381,12 +387,14 @@ class GameScene: SKScene {
         addChild(overlay)
         
         let victoryLabel = SKLabelNode(text: "You Win!")
+        victoryLabel.fontName = "PressStart2P-Regular"
         victoryLabel.fontSize = 40
         victoryLabel.fontColor = .white
         victoryLabel.position = CGPoint(x: 0, y: 60)
         overlay.addChild(victoryLabel)
         
         let menuLabel = SKLabelNode(text: "Main Menu")
+        menuLabel.fontName = "PressStart2P-Regular"
         menuLabel.name = "mainMenu"
         menuLabel.fontSize = 30
         menuLabel.fontColor = .yellow
