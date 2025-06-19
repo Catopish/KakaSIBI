@@ -1,44 +1,44 @@
 import SwiftUI
 import AppKit       // for NSView
 import AVFoundation // for AVCaptureSession
-import TipKit
+//import TipKit
 import AVKit
 
-struct videoTips: Tip {
-    var title: Text {
-        Text("Tonton tutorialnya dulu, ya!")
-    }
-    var message: Text? {
-        Text("Dengan nonton video ini dulu, kamu bakal lebih paham\ncara bikin gerakan bahasa isyarat.")
-    }
-    var image: Image? {
-        Image(systemName: "1.circle")
-    }
-}
-
-struct selectWordsTips: Tip {
-    var title: Text {
-        Text("Ketuk di sini buat ganti kata")
-    }
-    var message: Text? {
-        Text("Klik aja kalau mau ubah kata-katanya.")
-    }
-    var image: Image? {
-        Image(systemName: "3.circle")
-    }
-}
-
-struct videoPreviewTips: Tip {
-    var title: Text {
-        Text("Ayo peragakan lagi!")
-    }
-    var message: Text? {
-        Text("Coba ulangin gerakannya biar makin lancar.")
-    }
-    var image: Image? {
-        Image(systemName: "2.circle")
-    }
-}
+//struct videoTips: Tip {
+//    var title: Text {
+//        Text("Tonton tutorialnya dulu, ya!")
+//    }
+//    var message: Text? {
+//        Text("Dengan nonton video ini dulu, kamu bakal lebih paham\ncara bikin gerakan bahasa isyarat.")
+//    }
+//    var image: Image? {
+//        Image(systemName: "1.circle")
+//    }
+//}
+//
+//struct selectWordsTips: Tip {
+//    var title: Text {
+//        Text("Ketuk di sini buat ganti kata")
+//    }
+//    var message: Text? {
+//        Text("Klik aja kalau mau ubah kata-katanya.")
+//    }
+//    var image: Image? {
+//        Image(systemName: "3.circle")
+//    }
+//}
+//
+//struct videoPreviewTips: Tip {
+//    var title: Text {
+//        Text("Ayo peragakan lagi!")
+//    }
+//    var message: Text? {
+//        Text("Coba ulangin gerakannya biar makin lancar.")
+//    }
+//    var image: Image? {
+//        Image(systemName: "2.circle")
+//    }
+//}
 
 struct TestingView: View {
     
@@ -51,17 +51,17 @@ struct TestingView: View {
     @State private var showOverlay: Bool = false   // show big check
     @State private var showCompletionModal = false
     let pronouns = ["Aku", "Kamu", "Dia", "Mereka", "Kita", "Kami"]
-    @State private var showHelpModal = false
+    @State private var showHelpModal = true
     
-    var videotips = videoTips()
-    var videopreviewtips = videoPreviewTips()
-    var selectwordstips = selectWordsTips()
+//    var videotips = videoTips()
+//    var videopreviewtips = videoPreviewTips()
+//    var selectwordstips = selectWordsTips()
     
-    @State private var tips: TipGroup = TipGroup(.ordered) {
-      videoTips()
-      videoPreviewTips()
-      selectWordsTips()
-    }
+//    @State private var tips: TipGroup = TipGroup(.ordered) {
+//      videoTips()
+//      videoPreviewTips()
+//      selectWordsTips()
+//    }
 
     @AppStorage("completedPronounsRaw") private var completedPronounsRaw: String = ""
     private var completedWords: Set<String> {
@@ -186,14 +186,14 @@ struct TestingView: View {
                                             }
                                         }
 
-                                        if let tip = tips.currentTip as? videoTips {
-                                            TipView(videotips, arrowEdge: .top)
-                                                .zIndex(1)
-                                                .padding(.bottom,-300)
-                                                .tipBackground(Color.black)
-                                                .fixedSize(horizontal: true, vertical: false)
-                                                .padding(.leading,50)
-                                        }
+//                                        if let tip = tips.currentTip as? videoTips {
+//                                            TipView(videotips, arrowEdge: .top)
+//                                                .zIndex(1)
+//                                                .padding(.bottom,-300)
+//                                                .tipBackground(Color.black)
+//                                                .fixedSize(horizontal: true, vertical: false)
+//                                                .padding(.leading,50)
+//                                        }
                                     }
                                     .clipShape(RoundedRectangle(cornerRadius: 8))
                                     .frame(width: geometry.size.width * 0.35, height: geometry.size.height * 0.9)
@@ -212,13 +212,6 @@ struct TestingView: View {
                                             .background(Color.gray)
 //                                            .padding(.top, 70)
                                             Spacer()
-                                        }
-                                        if let tip = tips.currentTip as? videoPreviewTips {
-                                            TipView(videopreviewtips, arrowEdge: .top)
-                                                .zIndex(1)
-                                                .padding(.bottom,-300)
-                                                .tipBackground(Color.black)
-                                                .fixedSize(horizontal: true, vertical: false)
                                         }
                                     }
                                     .clipShape(RoundedRectangle(cornerRadius: 8))
@@ -304,13 +297,13 @@ struct TestingView: View {
 
             }
             //            .frame(maxHeight: .infinity, alignment: .bottom)
-         if let tip = tips.currentTip as? selectWordsTips {
-            TipView(selectwordstips,arrowEdge: .bottom)
-                .zIndex(1)
-                .padding(.bottom,80)
-                .tipBackground(Color.black)
-                .fixedSize(horizontal: true, vertical: false)
-         }
+//         if let tip = tips.currentTip as? selectWordsTips {
+//            TipView(selectwordstips,arrowEdge: .bottom)
+//                .zIndex(1)
+//                .padding(.bottom,80)
+//                .tipBackground(Color.black)
+//                .fixedSize(horizontal: true, vertical: false)
+//         }
             
             
         }
@@ -323,14 +316,14 @@ struct TestingView: View {
             updateSelectedWord(to: 0)
         }
         //MARK: uncomment this on prod
-        .task {
-            do {
-                try Tips.configure()
-            }
-            catch {
-                print("Error initializing TipKit \(error.localizedDescription)")
-            }
-        }
+//        .task {
+//            do {
+//                try Tips.configure()
+//            }
+//            catch {
+//                print("Error initializing TipKit \(error.localizedDescription)")
+//            }
+//        }
         .onChange(of: camera.lastPrediction) { newPrediction in
             guard let picked = selectedWord,
                   picked == newPrediction
