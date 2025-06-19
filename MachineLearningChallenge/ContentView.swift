@@ -8,7 +8,7 @@ struct ContentView: View {
     var body: some View {
         VStack {
             // 1) The live preview
-            CameraPreview(session: camera.session)
+            CameraPreview(session: camera.session,model: camera)
                 .frame(width: 640, height: 480)
                 .cornerRadius(8)
                 .shadow(radius: 4)
