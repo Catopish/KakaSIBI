@@ -121,9 +121,17 @@ final class CameraModel: NSObject, ObservableObject {
     }
 
     func start() {
-        session.startRunning()
+        if !session.isRunning {
+            session.startRunning()
+        }
     }
 
+    func pause() {
+        if session .isRunning {
+            session.stopRunning()
+        }
+    }
+    
     private func setupSession() {
         session.sessionPreset = .high
         guard let cam = AVCaptureDevice.default(for: .video),

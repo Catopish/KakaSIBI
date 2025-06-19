@@ -42,9 +42,11 @@ struct VideoContainerView: View {
     @State private var playCount: Int = 0
     @State private var showReplayButton: Bool = false
     @State private var currentURL: URL
+    @Binding var showHelpModal: Bool
 
-    init(videoURL: URL) {
+    init(videoURL: URL, showHelpModal: Binding<Bool>) {
         self.videoURL = videoURL
+        self._showHelpModal = showHelpModal
         self._player = State(initialValue: AVPlayer(url: videoURL))
         self._currentURL = State(initialValue: videoURL)
     }
@@ -61,6 +63,15 @@ struct VideoContainerView: View {
                         updatePlayer(with: newURL)
                     }
                 }
+            
+                .onChange(of: showHelpModal) { isShowing in
+                    if isShowing {
+                        player.pause()
+                    } else {
+                        player.play()
+                    }
+                }
+
 
             if showReplayButton {
                 Button(action: {

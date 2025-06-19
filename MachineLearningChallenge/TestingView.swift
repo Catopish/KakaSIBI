@@ -147,13 +147,13 @@ struct TestingView: View {
                                         // Video berubah berdasarkan selectedWord
                                         if let selectedWord = selectedWord,
                                            let videoURL = getVideoURL(for: selectedWord) {
-                                            VideoContainerView(videoURL: videoURL)
+                                            VideoContainerView(showHelpModal: $showHelpModal, player: player, videoURL: videoURL)
                                                 .id(selectedWord) // Force refresh when word changes
                                                 .clipShape(RoundedRectangle(cornerRadius: 8))
                                                 .frame(width: geometry.size.width * 0.35, height: geometry.size.height * 0.75)
                                         } else {
                                             // Default video jika tidak ada yang dipilih
-                                            VideoContainerView(videoURL: Bundle.main.url(forResource: "aku", withExtension: "mov")!)
+                                            VideoContainerView(showHelpModal: $showHelpModal, player: player, videoURL: Bundle.main.url(forResource: "aku", withExtension: "mov")!)
                                                 .id("aku") // Default ID
                                                 .clipShape(RoundedRectangle(cornerRadius: 8))
                                                 .frame(width: geometry.size.width * 0.35, height: geometry.size.height * 0.75)
@@ -330,6 +330,17 @@ struct TestingView: View {
             }
         }
         
+        .onChange(of: showHelpModal) { isShowing in
+            if isShowing {
+                // Pause camera session or prediction handling
+                camera.pause()
+            } else {
+                // Resume camera session
+                camera.start()
+            }
+        }
+
+        
         .sheet(isPresented: $showCompletionModal) {
             VStack(spacing: 20) {
                 Text("🎉 Kamu sudah membuka Training Ground!")
@@ -388,6 +399,7 @@ struct TestingView: View {
         }
     }
 }
+
 
 // MARK: - CardView (Tampilan Kartu Itu Sendiri)
 struct CardView: View {
