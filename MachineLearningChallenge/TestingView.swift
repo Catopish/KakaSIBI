@@ -172,7 +172,7 @@ struct TestingView: View {
                                     .frame(width: geometry.size.width * 0.35, height: geometry.size.height * 0.9)
                                     
                                     ZStack{
-                                        CameraPreview(session: camera.session)
+                                        CameraPreview(session: camera.session,model: camera)
                                             .cornerRadius(8)
                                             .shadow(radius: 4)
                                         if let tip = tips.currentTip as? videoPreviewTips {
@@ -449,46 +449,132 @@ struct CardView: View {
     }
 }
 
+//struct HelpModalView: View {
+//    @Binding var showHelpModal: Bool
+//    
+//    var body: some View {
+//        ZStack {
+//            //            Color.black.opacity(0.4)
+//            //                .ignoresSafeArea()
+//            VStack(spacing: 20) {
+//                Text("Cara menggunakan aplikasi KakaSIBI")
+//                    .font(.headline)
+//                
+//                VStack(alignment: .leading, spacing: 10) {
+//                    Text("1. Posisikan diri Anda sejauh lengan Anda dari layar depan kamera.")
+//                    Image("TestImageModal")
+//                    Text("2. Tonton video instruksi terlebih dahulu.")
+//                    Text("3. Peragakan ulang bahasa isyarat di depan kamera Anda.")
+//                    Text("4. Jika gerakan sesuai, tanda centang akan muncul.")
+//                    Text("5. Jika gerakan sesuai, tanda centang akan muncul.")
+//                }
+//                .font(.body)
+//                
+//                // Close button
+//                Button {
+//                    showHelpModal = false
+//                } label: {
+//                    Text("Tutup")
+//                        .font(.headline)
+//                        .padding(.horizontal, 24)
+//                        .padding(.vertical, 12)
+//                        .background(Color.blue)
+//                        .foregroundColor(.white)
+//                        .cornerRadius(8)
+//                }
+//                .buttonStyle(.plain)
+//            }
+//            .padding()
+//            .background(Color.black)
+//            .cornerRadius(12)
+//            .shadow(radius: 10)
+//            .padding(.horizontal, 40)
+//        }
+//    }
+//}
+
+
 struct HelpModalView: View {
     @Binding var showHelpModal: Bool
+    @State private var currentPage = 0
     
+    private let helpTexts: [String] = [
+        "1. Pastikan Anda di ruangan yang terang dan memiliki latar belakang yang bersih.",
+        "2. Duduk dan posisikan diri Anda sejauh lengan Anda dari layar depan kamera.",
+        "3. Tonton video instruksi terlebih dahulu.",
+        "4. Peragakan ulang bahasa isyarat di depan kamera Anda.",
+        "5. Jika gerakan sesuai, tanda centang akan muncul."
+    ]
+    
+    private let images: [String] = [
+        "TestImageModal"
+    ]
+        
     var body: some View {
         ZStack {
-            //            Color.black.opacity(0.4)
-            //                .ignoresSafeArea()
             VStack(spacing: 20) {
                 Text("Cara menggunakan aplikasi KakaSIBI")
                     .font(.headline)
                 
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("1. Tonton video instruksi terlebih dahulu.")
-                    Text("2. Peragakan ulang bahasa isyarat di depan kamera Anda.")
-                    Text("3. Jika gerakan sesuai, tanda centang akan muncul.")
+                VStack(spacing: 16) {
+                    Text(helpTexts[currentPage])
+                        .font(.body)
+                        .multilineTextAlignment(.leading)
+                    
+                    Image("TestImageModal")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(height: 200)
+
+                    // Dot indicators
+                    HStack(spacing: 8) {
+                        ForEach(0..<helpTexts.count, id: \.self) { index in
+                            Circle()
+                                .fill(index == currentPage ? Color.white : Color.gray)
+                                .frame(width: 8, height: 8)
+                        }
+                    }
+                    .padding(.top, 8)
                 }
-                .font(.body)
-                
-                // Close button
-                Button {
-                    showHelpModal = false
-                } label: {
-                    Text("Tutup")
-                        .font(.headline)
+
+                HStack {
+                    // Back Button
+                    if currentPage > 0 {
+                        Button("Kembali") {
+                            currentPage -= 1
+                        }
+                    }
+
+                    Spacer()
+
+                    // Next or Close Button
+                    if currentPage < helpTexts.count - 1 {
+                        Button("Lanjut") {
+                            currentPage += 1
+                        }
+                    } else {
+                        Button("Tutup") {
+                            showHelpModal = false
+                        }
+                        .foregroundColor(.white)
                         .padding(.horizontal, 24)
                         .padding(.vertical, 12)
                         .background(Color.blue)
-                        .foregroundColor(.white)
                         .cornerRadius(8)
+                    }
                 }
-                .buttonStyle(.plain)
+                .font(.headline)
             }
             .padding()
             .background(Color.black)
             .cornerRadius(12)
             .shadow(radius: 10)
             .padding(.horizontal, 40)
+            .foregroundColor(.white)
         }
     }
 }
+
 
 // MARK: - Preview untuk Xcode Canvas
 //struct TestingView_Previews: PreviewProvider {
@@ -496,4 +582,9 @@ struct HelpModalView: View {
 //        TestingView()
 //            .frame(width: 1500, height: 600)
 //    }
+//}
+
+
+//#Preview {
+//    HelpModalView(showHelpModal: .constant(true))
 //}
