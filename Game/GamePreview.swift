@@ -9,7 +9,7 @@ struct GamePreview: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-                CameraPreview(session: cameraModel.session)
+                CameraPreview(session: cameraModel.session,model:cameraModel)
 
                 TransparentSpriteView(
                     scene: GameScene(size: geometry.size, cameraModel: cameraModel)
